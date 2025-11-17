@@ -1,0 +1,168 @@
+[
+  {
+    "title": "Motivations et enjeux (Drivers & Stakeholders)",
+    "description": "comprendre le contexte et les raisons du projet",
+    "questions": [
+      {
+        "question": "Quels problèmes ou opportunités motivent ce projet ?",
+        "examples": [
+          "Baisse du taux de rétention client (-15% sur 2 ans)",
+          "Opportunité d’étendre les canaux de vente (web + mobile)",
+          "Obligation réglementaire (ex : RGPD, CSRD)"
+        ]
+      },
+      {
+        "question": "Quelles sont les parties prenantes majeures concernées ?",
+        "examples": [
+          "Responsable CRM",
+          "Clients finaux",
+          "Équipe support"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Objectifs et résultats attendus (Goals & Outcomes)",
+    "description": "définir la finalité et les impacts attendus",
+    "questions": [
+      {
+        "question": "Quels sont les objectifs métier à atteindre avec ce projet ?",
+        "examples": [
+          "Augmenter la fidélité client de 20% d’ici 12 mois",
+          "Réduire le délai de traitement des commandes de 30%",
+          "Améliorer la qualité des données clients"
+        ]
+      },
+      {
+        "question": "Quels bénéfices ou changements concrets attendez-vous ?",
+        "examples": [
+          "Tableau de bord temps réel",
+          "Diminution des réclamations",
+          "Nouvelle fonctionnalité mobile"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Alignement stratégique",
+    "description": "relier le projet à la vision de l’entreprise",
+    "questions": [
+      {
+        "question": "Comment ce projet contribue-t-il à la stratégie de l’entreprise ?",
+        "examples": [
+          "S’inscrit dans la feuille de route de transformation digitale",
+          "Amélioration de l’expérience client",
+          "Renforcement du e-commerce"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Exigences fonctionnelles & non fonctionnelles (Requirements & Constraints)",
+    "description": "décrire ce que la solution doit faire et dans quelles conditions",
+    "questions": [
+      {
+        "question": "Quelles sont les fonctionnalités principales attendues ?",
+        "examples": [
+          "Consultation des points fidélité",
+          "Rapports automatiques mensuels",
+          "Authentification SSO"
+        ]
+      },
+      {
+        "question": "Avez-vous des exigences non fonctionnelles à prendre en compte ?",
+        "examples": [
+          "Temps de réponse < 2s",
+          "Disponibilité 24/7",
+          "Respect ISO 27001"
+        ]
+      },
+      {
+        "question": "Y a-t-il des contraintes à prendre en compte ?",
+        "examples": [
+          "Mise en production avant Black Friday",
+          "Hébergement en Europe",
+          "Réutilisation du SI existant"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Mode d’implémentation de la solution",
+    "description": "identifier la nature du projet (make, buy, etc.)",
+    "questions": [
+      {
+        "question": "Quel type de solution envisagez-vous ?",
+        "choix": [
+          "Make – Développement spécifique interne",
+          "Buy – Achat d’un progiciel / SaaS / solution tierce",
+          "Integration – Intégration d’une solution existante",
+          "Roll-out – Déploiement d’une solution groupe",
+          "Autre"
+        ],
+        "justification": "Justifiez ce choix.",
+        "examples": [
+          "Make : besoin spécifique non couvert",
+          "Buy : solution mature, time-to-market rapide",
+          "Integration : composant déjà présent ailleurs"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Utilisateurs et rôles",
+    "description": "identifier les acteurs du système",
+    "questions": [
+      {
+        "question": "Qui utilisera la solution et quel sera le rôle de chaque utilisateur ?",
+        "examples": [
+          "Conseiller client : met à jour les fiches client",
+          "Manager : valide les demandes",
+          "Client : suit ses commandes",
+          "Administrateur : gère les droits"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Architecture cible et intégrations",
+    "description": "positionner la solution dans le SI",
+    "questions": [
+      {
+        "question": "Cette solution remplace-t-elle un existant ?",
+        "examples": [
+          "Remplacement de l’outil CRM maison par Salesforce"
+        ]
+      },
+      {
+        "question": "La solution doit-elle s’intégrer avec d’autres applications ? Si oui, lesquelles ?",
+        "examples": [
+          "ERP (SAP)",
+          "Portail client",
+          "Outil de BI"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Cycle de vie, gouvernance et évolutivité",
+    "description": "prévoir la maintenance et la pérennité",
+    "questions": [
+      {
+        "question": "Qui assurera la maintenance et l’évolutivité de la solution ?",
+        "examples": [
+          "Équipe interne",
+          "Éditeur externe",
+          "Centre de service partagé"
+        ]
+      },
+      {
+        "question": "Avez-vous des exigences de portabilité ou d’évolutivité ?",
+        "examples": [
+          "Scalabilité horizontale",
+          "Portabilité vers le cloud"
+        ]
+      }
+    ]
+  }
+]

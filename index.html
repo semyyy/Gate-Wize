@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Form - Gate 2</title>
+
+  <!-- Modern font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-body: #f5f5f7;
+      --bg-card: #ffffff;
+      --border-subtle: #e5e7eb;
+      --border-strong: #d1d5db;
+      --accent: #4b5563;
+      --accent-soft: #e5e7eb;
+      --accent-strong: #374151;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --radius-lg: 1.25rem;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #ecfeff, #f5f5f7 40%);
+      color: var(--text-main);
+      font-size: 18px; /* fairly large global font */
+      line-height: 1.6;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 1120px;
+    }
+
+    .app-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .app-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .app-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent-strong);
+    }
+
+    .app-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 680px;
+    }
+
+    .help-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #111827;
+      color: #f9fafb;
+      font-size: 0.8rem;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.4);
+    }
+
+    .help-pill-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #f9fafb;
+      color: #111827;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(15, 23, 42, 0.04);
+      box-shadow: var(--shadow-soft);
+      padding: 26px 24px 24px;
+    }
+
+    @media (min-width: 768px) {
+      .card {
+        padding: 28px 30px 26px;
+      }
+    }
+
+    .form-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    @media (min-width: 1024px) {
+      .form-layout {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex: 1 1 auto;
+    }
+
+    .inline-validation-message {
+      margin: 6px 0 0;
+      font-size: 0.82rem;
+      color: #991b1b;
+    }
+
+    .has-inline-validation-error {
+      border-color: #b91c1c !important;
+      box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.15);
+      background-color: #fff5f5;
+    }
+
+    .form-section {
+      border-radius: 1.1rem;
+      border: 1px solid var(--border-subtle);
+      padding: 18px 18px 20px;
+      background: linear-gradient(135deg, #f9fafb, #ffffff);
+    }
+
+    .form-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .form-section-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .form-section-description {
+      font-size: 0.94rem;
+      color: var(--text-muted);
+    }
+
+    .help-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      cursor: help;
+      background: #f9fafb;
+    }
+
+    .questions-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .field-label-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .field-label {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .field-hint {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    textarea,
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    select {
+      width: 100%;
+      border-radius: 0.9rem;
+      border: 1px solid var(--border-strong);
+      padding: 10px 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 72px;
+      background: #f9fafb;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    }
+
+    textarea::placeholder,
+    input::placeholder {
+      color: #9ca3af;
+      font-size: 0.92rem;
+    }
+
+    textarea:focus,
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 2px rgba(75, 85, 99, 0.35);
+      background: #ffffff;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: 0.9rem;
+      border: 1px dashed var(--border-strong);
+      background: #f9fafb;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .radio-option input[type="radio"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Tableaux dynamiques */
+    .dynamic-table-wrapper {
+      margin-top: 4px;
+    }
+
+    .dynamic-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 0.9rem;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: #f9fafb;
+      font-size: 0.9rem;
+    }
+
+    .dynamic-table thead {
+      background: #f1f2f5;
+    }
+
+    .dynamic-table th,
+    .dynamic-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: top;
+    }
+
+    .dynamic-table th {
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .dynamic-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .dynamic-table input[type="text"],
+    .dynamic-table textarea,
+    .dynamic-table select {
+      min-height: 0;
+      font-size: 0.9rem;
+      padding: 6px 8px;
+    }
+
+    .table-actions-cell {
+      width: 1%;
+      white-space: nowrap;
+    }
+
+    .btn,
+    .btn-secondary {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease, color 0.1s ease;
+      font-family: inherit;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent-strong), #111827);
+      color: #ecfeff;
+      box-shadow: 0 14px 30px rgba(55, 65, 81, 0.35);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(17, 24, 39, 0.5);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 25px rgba(55, 65, 81, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: var(--accent-strong);
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+      border-radius: 999px;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+      transform: translateY(-0.5px);
+    }
+
+    .btn-secondary:active {
+      transform: translateY(0);
+    }
+
+    .submit-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 640px) {
+      .submit-row {
+        justify-content: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    .submit-label {
+      margin-right: auto;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .submit-label-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent-strong);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-shell">
+    <header class="app-header">
+      <div class="app-header-top">
+        <div>
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Gate 2 · Project Form
+          </div>
+          <h1 class="app-title">Project scoping form</h1>
+        </div>
+        <div class="help-pill">
+          <span class="help-pill-icon">?</span>
+          <span>Use the examples in each field as guidance.</span>
+        </div>
+      </div>
+      <p class="app-subtitle">
+        Please answer with as much precision as possible. The hints shown in each input are there to inspire
+        you, but feel free to adapt them to your own context.
+      </p>
+    </header>
+
+    <main class="card">
+      <div class="form-layout">
+        <!-- Reusable architecture: DynamicForm + Section -->
+        <!-- DynamicForm -->
+        <form>
+        <!-- Section 1 -->
+        <section class="form-section" data-section="drivers-stakeholders">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Drivers &amp; Stakeholders</h2>
+              <p class="form-section-description">understand the context and reasons behind the project</p>
+            </div>
+            <span class="help-icon" title="Explain why this project exists and who is involved.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <!-- Q1 -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="motivations-problemes">
+                  Which problems or opportunities motivate this project?
+                </label>
+                <span class="field-hint">Describe current issues or the opportunities to capture.</span>
+              </div>
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="motivations-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Description / impact</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <select name="motivation_type[]">
+                          <option value="probleme">Problem</option>
+                          <option value="opportunite">Opportunity</option>
+                        </select>
+                      </td>
+                      <td>
+                        <textarea id="motivations-problemes" name="motivation_detail[]" placeholder="Drop in customer retention rate (-15% over 2 years)"></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <select name="motivation_type[]">
+                          <option value="probleme">Problem</option>
+                          <option value="opportunite" selected>Opportunity</option>
+                        </select>
+                      </td>
+                      <td>
+                        <textarea name="motivation_detail[]" placeholder="Opportunity to extend sales channels (web + mobile)"></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="motivations-table">+ Add an item</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Q2 - dynamic table (stakeholders) -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="stakeholders-table">
+                  Which major stakeholders are involved?
+                </label>
+                <span class="field-hint">List the key roles and how they are involved.</span>
+              </div>
+
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="stakeholders-table">
+                  <thead>
+                    <tr>
+                      <th>Stakeholder</th>
+                      <th>Role / Detail</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input type="text" name="stakeholder_nom[]" placeholder="CRM lead" />
+                      </td>
+                      <td>
+                        <textarea name="stakeholder_role[]" placeholder="Leads the loyalty program, tracks marketing campaigns, owns the CRM strategy."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <input type="text" name="stakeholder_nom[]" placeholder="End customers" />
+                      </td>
+                      <td>
+                        <textarea name="stakeholder_role[]" placeholder="Use the solution daily (web, mobile) and are impacted by the user experience."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="stakeholders-table">+ Add a stakeholder</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="form-section" data-section="objectives-outcomes">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Objectives and expected results (Goals &amp; Outcomes)</h2>
+              <p class="form-section-description">define the purpose and expected impact</p>
+            </div>
+            <span class="help-icon" title="Explain what the business wants to achieve and the tangible benefits.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <!-- Q1 - business objectives (dynamic table) -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="objectifs-metier-table">
+                  Which business objectives should this project deliver?
+                </label>
+                <span class="field-hint">Formulate measurable objectives whenever possible.</span>
+              </div>
+
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="objectifs-metier-table">
+                  <thead>
+                    <tr>
+                      <th>Business objective</th>
+                      <th>Indicator / target</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="objectif_metier_libelle[]" placeholder="Increase customer loyalty by 20% within 12 months"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="objectif_metier_indicateur[]" placeholder="Repeat purchase rate, average basket size, number of loyal customers."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="objectif_metier_libelle[]" placeholder="Reduce order processing lead time by 30%"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="objectif_metier_indicateur[]" placeholder="Average processing time, time between order and shipping."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="objectifs-metier-table">+ Add an objective</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Q2 - benefits (dynamic table) -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="benefices-table">
+                  What benefits or concrete changes do you expect?
+                </label>
+                <span class="field-hint">Focus on results that are visible to users and the business.</span>
+              </div>
+
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="benefices-table">
+                  <thead>
+                    <tr>
+                      <th>Benefit / change</th>
+                      <th>Detail</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="benefice_libelle[]" placeholder="Real-time dashboard"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="benefice_detail[]" placeholder="Real-time tracking of sales, inventory, and channel performance."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="benefice_libelle[]" placeholder="Fewer complaints"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="benefice_detail[]" placeholder="Fewer order errors, better customer service quality."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="benefices-table">+ Add a benefit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="form-section" data-section="strategic-alignment">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Strategic alignment</h2>
+              <p class="form-section-description">connect the project to the company vision</p>
+            </div>
+            <span class="help-icon" title="Explain how this project fits into the overall roadmap.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="alignement-strategique">
+                  How does this project contribute to the company strategy?
+                </label>
+                <span class="field-hint">Link it to transformation, customer experience, e-commerce, etc.</span>
+              </div>
+              <textarea id="alignement-strategique" name="alignement_strategique" placeholder="Part of the digital transformation roadmap
+Improve customer experience
+Strengthen e-commerce"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="form-section" data-section="requirements-constraints">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Functional &amp; non-functional requirements (Requirements &amp; Constraints)</h2>
+              <p class="form-section-description">describe what the solution must do and under which conditions</p>
+            </div>
+            <span class="help-icon" title="Detail the features and any technical or regulatory constraints.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <!-- Key features – dynamic table -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="fonctionnalites-table">
+                  Which main features are expected?
+                </label>
+                <span class="field-hint">List the major features.</span>
+              </div>
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="fonctionnalites-table">
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th>Description / Detail</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="fonctionnalite_libelle[]" placeholder="View loyalty points"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="fonctionnalite_detail[]" placeholder="Display balance, points history, and usage rules."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="fonctionnalite_libelle[]" placeholder="Automated monthly reports"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="fonctionnalite_detail[]" placeholder="Automatic report delivery to managers (sales, inventory, performance)."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="fonctionnalites-table">+ Add a feature</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Non-functional requirements – dynamic table -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="exigences-non-fonctionnelles-table">
+                  Do you have non-functional requirements to consider?
+                </label>
+                <span class="field-hint">Performance, availability, security, compliance...</span>
+              </div>
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="exigences-non-fonctionnelles-table">
+                  <thead>
+                    <tr>
+                      <th>Non-functional requirement</th>
+                      <th>Detail</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="exigence_nf_libelle[]" placeholder="Response time &lt; 2s"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="exigence_nf_detail[]" placeholder="For critical ordering journeys, even during busy periods."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="exigence_nf_libelle[]" placeholder="24/7 availability"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="exigence_nf_detail[]" placeholder="Availability rate, maintenance windows, recovery plan."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="exigences-non-fonctionnelles-table">+ Add a requirement</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Constraints – dynamic table -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="contraintes-table">
+                  Are there constraints to consider?
+                </label>
+                <span class="field-hint">Schedule, technical, regulatory, or budget constraints...</span>
+              </div>
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="contraintes-table">
+                  <thead>
+                    <tr>
+                      <th>Constraint</th>
+                      <th>Detail</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="contrainte_libelle[]" placeholder="Go-live before Black Friday"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="contrainte_detail[]" placeholder="Meet project milestones, code freeze before peak season."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="contrainte_libelle[]" placeholder="Hosting in Europe"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="contrainte_detail[]" placeholder="Comply with local regulations (GDPR, data residency)."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="contraintes-table">+ Add a constraint</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5 -->
+        <section class="form-section" data-section="mode-implementation">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Solution implementation approach</h2>
+              <p class="form-section-description">identify the nature of the project (make, buy, etc.)</p>
+            </div>
+            <span class="help-icon" title="Choose the intended implementation mode and justify it.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <!-- Solution type - RadioGroup -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <span class="field-label">What type of solution are you considering?</span>
+                <span class="field-hint">Single choice.</span>
+              </div>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" name="type_solution" value="make" />
+                  <span>Make – Custom in-house development</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="type_solution" value="buy" />
+                  <span>Buy – Purchase of a software package / SaaS / third-party solution</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="type_solution" value="integration" />
+                  <span>Integration – Integrate an existing solution</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="type_solution" value="rollout" />
+                  <span>Roll-out – Deploy a group-wide solution</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="type_solution" value="autre" />
+                  <span>Other</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Justification -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="justification-solution">
+                  Justify this choice.
+                </label>
+                <span class="field-hint">Explain why this implementation mode is the best fit.</span>
+              </div>
+              <textarea id="justification-solution" name="justification_solution" placeholder="Make: specific need not covered by the market
+Buy: mature solution, fast time-to-market, vendor support
+Integration: component already used elsewhere in the group, consistent with the existing IS"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 6 -->
+        <section class="form-section" data-section="users-roles">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Users and roles</h2>
+              <p class="form-section-description">identify the system actors</p>
+            </div>
+            <span class="help-icon" title="List the different user types and what they will do in the solution.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <!-- Users & roles - dynamic table -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="utilisateurs-roles-table">
+                  Who will use the solution and what will each user do?
+                </label>
+                <span class="field-hint">Specify the personas and their responsibilities.</span>
+              </div>
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="utilisateurs-roles-table">
+                  <thead>
+                    <tr>
+                      <th>User type</th>
+                      <th>Role in the solution</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="utilisateur_type[]" placeholder="Customer advisor"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="utilisateur_role[]" placeholder="Updates customer records, checks history, processes requests."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="utilisateur_type[]" placeholder="Manager"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="utilisateur_role[]" placeholder="Approves requests, monitors team performance."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="utilisateur_type[]" placeholder="Client"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="utilisateur_role[]" placeholder="Tracks their orders and loyalty points, updates their information."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="utilisateurs-roles-table">+ Add a user</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 7 -->
+        <section class="form-section" data-section="architecture-integrations">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Target architecture and integrations</h2>
+              <p class="form-section-description">position the solution within the IS</p>
+            </div>
+            <span class="help-icon" title="Describe the applications being replaced and the needed integrations.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <!-- Replace an existing system? -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="remplacement-existant">
+                  Does this solution replace an existing one?
+                </label>
+                <span class="field-hint">Indicate which tool or system is replaced, if any.</span>
+              </div>
+              <textarea id="remplacement-existant" name="remplacement_existant" placeholder="Replacing the in-house CRM tool with Salesforce"></textarea>
+            </div>
+
+            <!-- Integrations - dynamic table -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="integrations-table">
+                  Does the solution need to integrate with other applications? If so, which ones?
+                </label>
+                <span class="field-hint">List the main systems the solution must interact with.</span>
+              </div>
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="integrations-table">
+                  <thead>
+                    <tr>
+                      <th>Application / system</th>
+                      <th>Integration type / usage</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="integration_app[]" placeholder="ERP (SAP)"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="integration_usage[]" placeholder="Exchange order, inventory, and invoicing data."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="integration_app[]" placeholder="Customer portal"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="integration_usage[]" placeholder="Display account information, track orders and history."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="integration_app[]" placeholder="BI tool"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="integration_usage[]" placeholder="Feed executive reports and dashboards."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="integrations-table">+ Add an application</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 8 -->
+        <section class="form-section" data-section="lifecycle-governance">
+          <div class="form-section-header">
+            <div class="form-section-title-block">
+              <h2 class="form-section-title">Lifecycle, governance, and scalability</h2>
+              <p class="form-section-description">plan for maintenance and sustainability</p>
+            </div>
+            <span class="help-icon" title="Who maintains the solution, how it evolves, and on which environments.">?</span>
+          </div>
+
+          <div class="questions-grid">
+            <!-- Maintenance & scalability -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="maintenance-evolutivite">
+                  Who will handle maintenance and scalability for the solution?
+                </label>
+                <span class="field-hint">Specify the teams, partners, or vendors.</span>
+              </div>
+              <textarea id="maintenance-evolutivite" name="maintenance_evolutivite" placeholder="Internal team: application team in charge of the CRM
+External vendor: support contract with the vendor
+Shared service center: mutualized AMS at group level"></textarea>
+            </div>
+
+            <!-- Portability / scalability requirements - dynamic table -->
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="field-label" for="portabilite-evolutivite-table">
+                  Do you have portability or scalability requirements?
+                </label>
+                <span class="field-hint">For example: cloud, scalability, multi-country...</span>
+              </div>
+              <div class="dynamic-table-wrapper">
+                <table class="dynamic-table" id="portabilite-evolutivite-table">
+                  <thead>
+                    <tr>
+                      <th>Requirement</th>
+                      <th>Detail</th>
+                      <th class="table-actions-cell">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <textarea name="exigence_portabilite_libelle[]" placeholder="Horizontal scalability"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="exigence_portabilite_detail[]" placeholder="Ability to add nodes to absorb higher workloads."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <textarea name="exigence_portabilite_libelle[]" placeholder="Cloud portability"></textarea>
+                      </td>
+                      <td>
+                        <textarea name="exigence_portabilite_detail[]" placeholder="Ability to deploy the solution on a public or private cloud."></textarea>
+                      </td>
+                      <td class="table-actions-cell">
+                        <button type="button" class="btn-secondary btn-remove-row">Remove</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: flex-start;">
+                  <button type="button" class="btn-secondary btn-add-row" data-table-id="portabilite-evolutivite-table">+ Add a requirement</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Submit button -->
+        <div class="submit-row">
+          <div class="submit-label">
+            <span class="submit-label-dot"></span>
+            <span>Review your answers before submitting the form.</span>
+          </div>
+          <button type="submit" class="btn">
+            <span>Submit the form</span>
+          </button>
+        </div>
+      </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Handle validations and dynamic tables
+    document.addEventListener("DOMContentLoaded", function () {
+      const validationEntries = new Map();
+      const inlineErrorElements = new Map();
+      const wordValidationSelector = "textarea, input[type='text']";
+      const motivationsTable = document.getElementById("motivations-table");
+      const motivationsRequiredTerm = "rate";
+      let fieldIdCounter = 0;
+
+      function ensureFieldId(field) {
+        if (!field) return null;
+        if (!field.id) {
+          field.id = `field-${++fieldIdCounter}`;
+        }
+        return field.id;
+      }
+
+      function getFieldLabel(field) {
+        const fieldContainer = field.closest(".form-field");
+        if (!fieldContainer) return null;
+        const labelEl = fieldContainer.querySelector(".field-label");
+        return labelEl ? labelEl.textContent.trim() : null;
+      }
+
+      function getEntryField(entry) {
+        if (entry.targetElement) return entry.targetElement;
+        if (entry.targetId) return document.getElementById(entry.targetId);
+        return null;
+      }
+
+      function showInlineValidation(key, entry) {
+        const field = getEntryField(entry);
+        if (!field) return;
+        let messageEl = inlineErrorElements.get(key);
+        if (!messageEl) {
+          messageEl = document.createElement("p");
+          messageEl.className = "inline-validation-message";
+          inlineErrorElements.set(key, messageEl);
+        }
+        messageEl.textContent = entry.message;
+        if (!messageEl.isConnected) {
+          field.insertAdjacentElement("afterend", messageEl);
+        }
+        field.classList.add("has-inline-validation-error");
+      }
+
+      function hideInlineValidation(key, entry) {
+        const messageEl = inlineErrorElements.get(key);
+        if (messageEl && messageEl.parentNode) {
+          messageEl.parentNode.removeChild(messageEl);
+        }
+        inlineErrorElements.delete(key);
+        const field = getEntryField(entry);
+        if (!field) return;
+        const stillInvalid = Array.from(validationEntries.values()).some(function (otherEntry, mapKey) {
+          if (mapKey === key) return false;
+          return getEntryField(otherEntry) === field;
+        });
+        if (!stillInvalid) {
+          field.classList.remove("has-inline-validation-error");
+        }
+      }
+
+      function setValidationEntry(key, entry) {
+        validationEntries.set(key, entry);
+        showInlineValidation(key, entry);
+      }
+
+      function removeValidationEntry(key) {
+        const entry = validationEntries.get(key);
+        if (!entry) return;
+        validationEntries.delete(key);
+        hideInlineValidation(key, entry);
+      }
+
+      function focusValidationTarget(targetId) {
+        if (!targetId) return;
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          targetElement.focus();
+        }
+      }
+
+      function countWords(value) {
+        const trimmed = value.trim();
+        if (!trimmed) return 0;
+        return trimmed.split(/\s+/).length;
+      }
+
+      function validateWordCountForField(field, force = false) {
+        if (!field) return true;
+        const wordCount = countWords(field.value);
+        const isValid = wordCount >= 3 && wordCount <= 5;
+        const fieldId = ensureFieldId(field);
+        const key = `word-${fieldId}`;
+        const label =
+          getFieldLabel(field) || field.placeholder || field.dataset.validationLabel || "Field";
+
+        if (!isValid && (force || field.dataset.validationTouched === "true")) {
+          setValidationEntry(key, {
+            label,
+            message: `Must contain between 3 and 5 words (currently ${wordCount}).`,
+            targetElement: field,
+          });
+        } else {
+          removeValidationEntry(key);
+        }
+
+        return isValid;
+      }
+
+      function registerFieldForWordValidation(field) {
+        if (!field || field.dataset.wordValidationRegistered === "true") return;
+        field.dataset.wordValidationRegistered = "true";
+        ensureFieldId(field);
+        field.addEventListener("input", function () {
+          field.dataset.validationTouched = "true";
+          validateWordCountForField(field);
+        });
+        field.addEventListener("blur", function () {
+          field.dataset.validationTouched = "true";
+          validateWordCountForField(field);
+        });
+      }
+
+      function registerWordValidationFields(root = document) {
+        root.querySelectorAll(wordValidationSelector).forEach(registerFieldForWordValidation);
+      }
+
+      function cleanupWordValidationEntries(root) {
+        if (!root) return;
+        const fields = root.querySelectorAll(wordValidationSelector);
+        const keysToRemove = [];
+        validationEntries.forEach(function (entry, key) {
+          if (entry.targetElement && root.contains(entry.targetElement)) {
+            keysToRemove.push(key);
+          }
+        });
+        keysToRemove.forEach(removeValidationEntry);
+        fields.forEach(function (field) {
+          field.dataset.validationTouched = "";
+        });
+      }
+
+      function validateAllWordFields(force = false) {
+        const fields = document.querySelectorAll(wordValidationSelector);
+        let allValid = true;
+        fields.forEach(function (field) {
+          if (!validateWordCountForField(field, force)) {
+            allValid = false;
+          }
+        });
+        return allValid;
+      }
+
+      function assignMotivationsPrimaryId() {
+        if (!motivationsTable) return;
+        const textareas = motivationsTable.querySelectorAll("textarea");
+        if (!textareas.length) return;
+        textareas.forEach(function (textarea, index) {
+          if (index === 0) {
+            textarea.id = "motivations-problemes";
+          } else if (textarea.id === "motivations-problemes") {
+            textarea.removeAttribute("id");
+          }
+        });
+      }
+
+      function validateMotivations(showInvalid = true) {
+        if (!motivationsTable) return true;
+        const primaryTextarea = motivationsTable.querySelector("textarea");
+        if (!primaryTextarea) return true;
+        const entries = motivationsTable.querySelectorAll("textarea");
+        const hasTerm = Array.from(entries).some(function (textarea) {
+          return textarea.value.toLowerCase().includes(motivationsRequiredTerm);
+        });
+        const key = "motivations-term";
+
+        if (!hasTerm) {
+          if (showInvalid) {
+            setValidationEntry(key, {
+              label: "Drivers / Opportunities",
+              message: 'Add at least one entry containing "rate".',
+              targetElement: primaryTextarea,
+            });
+          } else {
+            removeValidationEntry(key);
+          }
+        } else {
+          removeValidationEntry(key);
+        }
+
+        return hasTerm;
+      }
+
+      function focusFirstInvalidEntry() {
+        const firstEntry = validationEntries.values().next();
+        if (!firstEntry.done) {
+          const entry = firstEntry.value;
+          if (entry.targetElement) {
+            entry.targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            entry.targetElement.focus();
+          } else if (entry.targetId) {
+            focusValidationTarget(entry.targetId);
+          }
+        }
+      }
+
+      function addRow(tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const tbody = table.querySelector("tbody");
+        const lastRow = tbody.querySelector("tr:last-child");
+        if (!lastRow) return;
+        const newRow = lastRow.cloneNode(true);
+
+        newRow.querySelectorAll("input, textarea, select").forEach(function (el) {
+          if (el.tagName === "SELECT") {
+            el.selectedIndex = 0;
+          } else {
+            el.value = "";
+          }
+        });
+        newRow.querySelectorAll("[id]").forEach(function (el) {
+          el.removeAttribute("id");
+        });
+
+        tbody.appendChild(newRow);
+        assignMotivationsPrimaryId();
+        registerWordValidationFields(newRow);
+      }
+
+      function onAddRowClick(event) {
+        const btn = event.currentTarget;
+        const tableId = btn.getAttribute("data-table-id");
+        if (tableId) {
+          addRow(tableId);
+        }
+      }
+
+      document.querySelectorAll(".btn-add-row").forEach(function (btn) {
+        btn.addEventListener("click", onAddRowClick);
+      });
+
+      if (motivationsTable) {
+        motivationsTable.addEventListener("focusout", function (event) {
+          if (event.target && event.target.tagName === "TEXTAREA") {
+            validateMotivations(true);
+          }
+        });
+      }
+
+      const form = document.querySelector("form");
+      if (form) {
+        form.addEventListener("submit", function (event) {
+          const wordsValid = validateAllWordFields(true);
+          const motivationsValid = validateMotivations(true);
+          if (!(wordsValid && motivationsValid)) {
+            event.preventDefault();
+            focusFirstInvalidEntry();
+          }
+        });
+      }
+
+      document.addEventListener("click", function (event) {
+        if (event.target && event.target.classList.contains("btn-remove-row")) {
+          const row = event.target.closest("tr");
+          const tbody = row.parentElement;
+          if (tbody.querySelectorAll("tr").length > 1) {
+            cleanupWordValidationEntries(row);
+            row.remove();
+            assignMotivationsPrimaryId();
+            registerWordValidationFields(tbody);
+            validateMotivations(true);
+            validateAllWordFields(false);
+          }
+        }
+      });
+
+      registerWordValidationFields();
+      assignMotivationsPrimaryId();
+      validateMotivations(false);
+    });
+  </script>
+</body>
+</html>
