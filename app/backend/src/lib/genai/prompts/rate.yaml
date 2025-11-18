@@ -1,0 +1,41 @@
+task: |
+  You are an expert requirements analyst. Evaluate each field in a structured form.
+
+context:
+  form_spec: |
+    The following JSON describes the form structure. Each question is uniquely identified by a path like s{sectionIndex}.q{questionIndex}.
+    Use each question's metadata (type, description, options/attributes, and examples) to guide your evaluation.
+    ```json
+    {{spec_json}}
+    ```
+  user_input: |
+    The following JSON contains the user's current answers keyed by the same paths.
+    ```json
+    {{value_json}}
+    ```
+
+guidelines: |
+  - For every question path present in the form spec, produce an evaluation object with:
+    - comment: short, actionable feedback (1-2 sentences max). Be concrete.
+    - rate: optional, one of [invalid, partial, valid]. Omit if uncertain.
+  - Consider question type:
+    - simple: assess clarity and completeness of the text.
+    - option: ensure a choice was made and, if applicable, that justification is sensible.
+    - detailed: ensure the table has rows and that attributes are non-empty.
+  - Use examples and descriptions from the spec to calibrate quality.
+  - Be concise; avoid repeating the question text.
+
+output_schema: |
+  You MUST return JSON that conforms to this structure exactly:
+  {
+    "ratings": {
+      "<path>": {
+        "comment": "string",
+        "rate": "invalid" | "partial" | "valid" (optional)
+      },
+      ...
+    }
+  }
+
+final_instruction: |
+  Return only the JSON. No explanations.

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from 'react';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogClose } from '@/components/ui/dialog';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import NewFormForm from '@/components/forms/NewFormForm';
 import DeleteActions from '@/components/forms/DeleteActions';
@@ -14,6 +14,8 @@ export function FormToolbar({
   justRefreshed,
   onCreate,
   onDelete,
+  onSave,
+  canSave,
 }: {
   forms: { id: string; name: string }[];
   currentId?: string;
@@ -22,6 +24,8 @@ export function FormToolbar({
   justRefreshed?: boolean;
   onCreate: (name: string, useDefault: boolean) => Promise<void> | void;
   onDelete: () => Promise<void> | void;
+  onSave?: () => Promise<void> | void;
+  canSave?: boolean;
 }) {
   const nameCounts = React.useMemo(() => {
     const m = new Map<string, number>();
@@ -75,6 +79,36 @@ export function FormToolbar({
       ) : justRefreshed ? (
         <span className="text-sm text-emerald-600" aria-live="polite">Updated</span>
       ) : null}
+
+      <Dialog>
+        <DialogTrigger asChild>
+          <button
+            className="border rounded p-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !canSave}
+            title="Save / Override"
+            aria-label="Save Form"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 3h8l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h8V3" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 21v-6h6v6" />
+            </svg>
+          </button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader title="Save Form" description={currentId ? `This will overwrite "${currentId}" if it exists. Continue?` : 'This will create a new form or overwrite if the same id exists.'} />
+          <div className="flex justify-end gap-2">
+            <DialogClose asChild>
+              <button className="border rounded px-3 py-1 text-sm">Cancel</button>
+            </DialogClose>
+            <DialogClose asChild>
+              <button className="border rounded px-3 py-1 text-sm bg-black text-white" onClick={() => onSave?.()}>
+                Confirm Save
+              </button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog>
         <DialogTrigger asChild>

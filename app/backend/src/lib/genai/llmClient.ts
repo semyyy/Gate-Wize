@@ -23,7 +23,8 @@ export class LLMClient {
       throw new Error('GOOGLE_API_KEY is required');
     }
     this.client = new GoogleGenerativeAI(apiKey);
-    this.defaultModel = opts.defaultModel ?? 'gemini-1.5-flash';
+    const envModel = process.env.GEMINI_MODEL ?? process.env.GOOGLE_MODEL;
+    this.defaultModel = opts.defaultModel ?? envModel ?? 'gemini-2.5-flash';
     this.temperature = opts.temperature ?? 0.2;
     this.maxOutputTokens = opts.maxOutputTokens;
   }
@@ -57,10 +58,20 @@ export class LLMClient {
   }
 
   async generateText(prompt: string | ChatMessage[], model?: string): Promise<string> {
-    const gen = this.getModel(model);
-    const result = await gen.generateContent(this.toInput(prompt));
-    const text = result.response.text();
-    return text;
+    const candidates = this.modelCandidates(model);
+    let lastErr: unknown = undefined;
+    for (const m of candidates) {
+      try {
+        const gen = this.getModel(m);
+        const result = await gen.generateContent(this.toInput(prompt));
+        return result.response.text();
+      } catch (e: any) {
+        lastErr = e;
+        if (!this.isModelNotFound(e)) throw e;
+        // try next candidate
+      }
+    }
+    throw lastErr ?? new Error('All models failed for generateText');
   }
 
   async generateStructured<T extends z.ZodTypeAny>(args: {
@@ -69,12 +80,36 @@ export class LLMClient {
     model?: string;
   }): Promise<z.infer<T>> {
     const jsonSchema = zodToJsonSchema(args.schema, 'Result');
-    const gen = this.getModel(args.model, jsonSchema as any);
+    const candidates = this.modelCandidates(args.model);
+    let lastErr: unknown = undefined;
+    for (const m of candidates) {
+      try {
+        const gen = this.getModel(m, jsonSchema as any);
+        const result = await gen.generateContent(this.toInput(args.prompt));
+        const text = result.response.text();
+        const parsed = JSON.parse(text);
+        return args.schema.parse(parsed);
+      } catch (e: any) {
+        lastErr = e;
+        if (!this.isModelNotFound(e)) throw e;
+        // try next model if not found/unsupported
+      }
+    }
+    throw lastErr ?? new Error('All models failed for generateStructured');
+  }
 
-    const result = await gen.generateContent(this.toInput(args.prompt));
+  private modelCandidates(preferred?: string): string[] {
+    const list = [
+      preferred,
+      this.defaultModel,
+      'gemini-2.5-flash',
+    ].filter(Boolean) as string[];
+    // de-duplicate while preserving order
+    return Array.from(new Set(list));
+  }
 
-    const text = result.response.text();
-    const parsed = JSON.parse(text);
-    return args.schema.parse(parsed);
+  private isModelNotFound(e: any): boolean {
+    const msg = String(e?.message ?? e ?? '').toLowerCase();
+    return e?.status === 404 || msg.includes('not found') || msg.includes('is not found for api version');
   }
 }

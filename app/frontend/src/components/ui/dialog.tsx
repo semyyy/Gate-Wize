@@ -57,7 +57,7 @@ export function DialogContent({ children }: { children: React.ReactNode }) {
   if (!ctx?.open) return null;
   return (
     <DialogPortal>
-      <div className="fixed inset-0 bg-black/40" onClick={() => ctx.setOpen(false)} />
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => ctx.setOpen(false)} />
       <div className="fixed left-1/2 top-1/2 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border bg-white p-4 shadow">
         {children}
       </div>

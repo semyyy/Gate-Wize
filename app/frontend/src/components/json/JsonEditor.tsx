@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 export type JsonEditorError = { offset: number; length: number; message: string };
 
-export function JsonEditor({ value, onChange, errors }: { value: string; onChange: (next: string) => void; errors?: JsonEditorError[] }) {
+export function JsonEditor({ value, onChange, errors, className }: { value: string; onChange: (next: string) => void; errors?: JsonEditorError[]; className?: string }) {
   const handleChange = useCallback((v?: string) => onChange(v ?? ''), [onChange]);
 
   const editorRef = useRef<import('monaco-editor').editor.IStandaloneCodeEditor | null>(null);
@@ -43,7 +43,7 @@ export function JsonEditor({ value, onChange, errors }: { value: string; onChang
   }, [errors, value]);
 
   return (
-    <div className="h-[600px] border rounded-md overflow-hidden">
+    <div className={(className ? className : 'h-[600px]') + " border rounded-md overflow-hidden"}>
       <Editor
         height="100%"
         defaultLanguage="json"

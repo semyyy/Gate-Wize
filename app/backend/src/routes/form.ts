@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { saveForm, loadForm, listForms, deleteForm } from '../lib/data/services/formService';
+import { saveForm, loadForm, listForms, deleteForm, formExists } from '../lib/data/services/formService';
 
 const router = Router();
 
@@ -20,6 +20,17 @@ router.get('/load/:id', async (req, res) => {
     const id = req.params.id;
     const obj = await loadForm(id);
     res.json({ ok: true, data: obj });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: String(e) });
+  }
+});
+
+router.get('/exists/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const exists = await formExists(id);
+    res.json({ ok: true, data: exists });
   } catch (e) {
     console.error(e);
     res.status(500).json({ ok: false, error: String(e) });

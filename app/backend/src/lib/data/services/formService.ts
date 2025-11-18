@@ -15,6 +15,11 @@ export async function loadForm(id: string) {
   return obj;
 }
 
+export async function formExists(id: string) {
+  const existing = await loadForm(id);
+  return existing != null;
+}
+
 export async function listForms() {
   await ensureBucket();
   const prefix = 'form/';
