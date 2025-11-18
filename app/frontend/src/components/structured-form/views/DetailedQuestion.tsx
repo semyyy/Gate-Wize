@@ -28,17 +28,23 @@ export function DetailedQuestionView({ q, path, value, onChange }: { q: Detailed
 
   return (
     <div>
-      <div className="flex items-baseline gap-2">
-        <div className="font-semibold">{q.question}</div>
+      <div className="mb-2 md:mb-3">
+        <div className="text-base font-semibold text-foreground">{q.question}</div>
+        {q.description ? (
+          <div className="mt-1 text-xs text-muted-foreground leading-relaxed">{q.description}</div>
+        ) : null}
       </div>
-      {q.description && <div className="text-muted-foreground mb-1">{q.description}</div>}
 
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
               {q.attributes.map((a) => (
-                <th key={a.name} className="text-left border-b p-2" title={a.description}>
+                <th
+                  key={a.name}
+                  className="text-left border-b border-gray-200 p-2 text-[11px] uppercase tracking-wide text-muted-foreground font-medium"
+                  title={a.description}
+                >
                   {a.name}
                 </th>
               ))}
@@ -49,13 +55,15 @@ export function DetailedQuestionView({ q, path, value, onChange }: { q: Detailed
             {rows.map((row, ri) => (
               <tr key={ri}>
                 {q.attributes.map((a) => (
-                  <td key={a.name} className="border-b p-2">
+                  <td key={a.name} className="border-b border-gray-200 p-2 align-top">
                     {Array.isArray(a.options) && a.options.length > 0 ? (
-                      <Select value={(row[a.name] as string) ?? ''} onValueChange={(val) => update(ri, a.name, val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select..." />
+                      <Select value={(row[a.name] as string) || undefined} onValueChange={(val) => update(ri, a.name, val)}>
+                        <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                          <SelectValue placeholder="Select an option" />
+                          <svg className="ml-2 h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="" className="text-gray-500">Select an option</SelectItem>
                           {a.options.map((opt) => (
                             <SelectItem key={opt} value={opt}>
                               {opt}
@@ -64,15 +72,12 @@ export function DetailedQuestionView({ q, path, value, onChange }: { q: Detailed
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input
-                        value={(row[a.name] as string) ?? ''}
-                        onChange={(e) => update(ri, a.name, e.target.value)}
-                      />
+                      <Input className="w-full" value={(row[a.name] as string) ?? ''} onChange={(e) => update(ri, a.name, e.target.value)} />
                     )}
                   </td>
                 ))}
-                <td className="border-b p-2">
-                  <Button type="button" variant="outline" onClick={() => remove(ri)}>Remove</Button>
+                <td className="border-b border-gray-200 p-2 align-top">
+                  <Button type="button" variant="outline" className="h-9" onClick={() => remove(ri)}>Remove</Button>
                 </td>
               </tr>
             ))}
@@ -80,7 +85,7 @@ export function DetailedQuestionView({ q, path, value, onChange }: { q: Detailed
         </table>
       </div>
 
-      <div className="mt-2 flex gap-2">
+      <div className="mt-3 flex gap-2">
         <Button type="button" onClick={addRow}>Add row</Button>
       </div>
     </div>
