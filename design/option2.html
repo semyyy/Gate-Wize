@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire de Cadrage Projet - IA Assisted</title>
+    
+    <!-- Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Configuration Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+                        secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
+                        muted: { DEFAULT: "#f1f5f9", foreground: "#64748b" },
+                    },
+                    keyframes: {
+                        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } }
+                    },
+                    animation: { shimmer: 'shimmer 2s linear infinite' }
+                }
+            }
+        }
+    </script>
+
+    <!-- Logique JavaScript & Simulation LLM -->
+    <script>
+        /**
+         * Simule un appel à un LLM pour valider le contenu.
+         */
+        async function mockLLMCheck(text, context) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const cleanText = text.trim();
+                    if (cleanText.length < 5) {
+                        resolve({ status: 'invalid', message: "La réponse est trop courte ou vide." });
+                    } else if (cleanText.length < 20) {
+                        resolve({ status: 'partial', message: "Bon début, mais manquez de détails." });
+                    } else if (cleanText.toLowerCase().includes("je ne sais pas")) {
+                        resolve({ status: 'invalid', message: "Évitez les réponses évasives." });
+                    } else {
+                        resolve({ status: 'valid', message: "Réponse claire et pertinente." });
+                    }
+                }, 800); 
+            });
+        }
+
+        function dynamicListLogic(contextQuestion) {
+            return {
+                items: [{ id: Date.now(), value: '', status: 'idle', feedback: '' }],
+                addItem() { this.items.push({ id: Date.now(), value: '', status: 'idle', feedback: '' }); },
+                removeItem(index) {
+                    if (this.items.length > 1) this.items.splice(index, 1);
+                    else { this.items[0].value = ''; this.items[0].status = 'idle'; this.items[0].feedback = ''; }
+                },
+                async validateItem(index) {
+                    const item = this.items[index];
+                    if (!item.value.trim()) { item.status = 'idle'; item.feedback = ''; return; }
+                    item.status = 'analyzing';
+                    const result = await mockLLMCheck(item.value, contextQuestion);
+                    item.status = result.status;
+                    item.feedback = result.message;
+                }
+            }
+        }
+
+        function simpleFieldLogic(contextQuestion) {
+            return {
+                value: '', status: 'idle', feedback: '',
+                async validate() {
+                    if (!this.value.trim()) { this.status = 'idle'; this.feedback = ''; return; }
+                    this.status = 'analyzing';
+                    const result = await mockLLMCheck(this.value, contextQuestion);
+                    this.status = result.status;
+                    this.feedback = result.message;
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <style>
+        .input-idle { border-color: hsl(var(--input)); }
+        .input-analyzing { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2); }
+        .input-valid { border-color: #22c55e; }
+        .input-partial { border-color: #f59e0b; }
+        .input-invalid { border-color: #ef4444; }
+        .bg-feedback-valid { background-color: #f0fdf4; color: #15803d; }
+        .bg-feedback-partial { background-color: #fffbeb; color: #b45309; }
+        .bg-feedback-invalid { background-color: #fef2f2; color: #b91c1c; }
+    </style>
+</head>
+<body class="antialiased min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-slate-50 text-slate-900">
+
+    <main class="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl border border-slate-200 overflow-hidden">
+        <header class="bg-slate-900 text-white p-8 sm:p-10 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="relative z-10 flex items-start justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">Cadrage de Projet</h1>
+                        <span class="bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-semibold px-2.5 py-0.5 rounded flex items-center gap-1">IA Assisted</span>
+                    </div>
+                    <p class="text-slate-300 text-lg font-light">Définition assistée des objectifs, enjeux et contraintes.</p>
+                </div>
+            </div>
+        </header>
+
+        <form action="#" method="POST" class="p-8 sm:p-10 space-y-12">
+
+            <!-- 1. Motivations et enjeux -->
+            <section class="space-y-6">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">1</span>
+                        Motivations et Enjeux
+                    </h2>
+                    <p class="text-muted-foreground text-lg mt-1 ml-10">Comprendre le contexte et les raisons du projet.</p>
+                </div>
+
+                <!-- Q1: Motivations -->
+                <div x-data="dynamicListLogic('Quels problèmes ou opportunités motivent ce projet ?')">
+                    <label class="block text-lg font-medium text-slate-900 mb-3">Quels problèmes ou opportunités motivent ce projet ?</label>
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="mb-4 flex gap-2 items-start">
+                            <!-- Input Wrapper (Flex-1 to take available space) -->
+                            <div class="relative flex-1">
+                                <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                    :class="{
+                                        'border-slate-300': item.status === 'idle',
+                                        'border-indigo-400 ring-2 ring-indigo-400/20': item.status === 'analyzing',
+                                        'border-green-500 ring-1 ring-green-500/20': item.status === 'valid',
+                                        'border-amber-400 ring-1 ring-amber-400/20': item.status === 'partial',
+                                        'border-red-500 ring-1 ring-red-500/20': item.status === 'invalid'
+                                    }"
+                                    class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground"
+                                    placeholder="Ex: Baisse du taux de rétention client (-15% sur 2 ans)...">
+                                
+                                <!-- Feedback Text Block (Inside Wrapper to match width) -->
+                                <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" 
+                                     x-transition.opacity
+                                     :class="{
+                                        'bg-feedback-valid': item.status === 'valid',
+                                        'bg-feedback-partial': item.status === 'partial',
+                                        'bg-feedback-invalid': item.status === 'invalid'
+                                     }"
+                                     class="mt-1 text-sm p-2 rounded-md flex items-start gap-2">
+                                     <span class="font-bold shrink-0" x-text="item.status === 'valid' ? 'Pertinent :' : (item.status === 'partial' ? 'Partiel :' : 'Invalide :')"></span>
+                                     <span x-text="item.feedback"></span>
+                                </div>
+                            </div>
+
+                            <!-- Delete Button (Outside wrapper) -->
+                            <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5" title="Supprimer">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                        <span class="text-lg leading-none">+</span> Ajouter
+                    </button>
+                </div>
+
+                <!-- Q2: Parties prenantes -->
+                <div x-data="dynamicListLogic('Quelles sont les parties prenantes majeures ?')" class="mt-8">
+                    <label class="block text-lg font-medium text-slate-900 mb-3">Quelles sont les parties prenantes majeures concernées ?</label>
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="mb-4 flex gap-2 items-start">
+                            <div class="relative flex-1">
+                                <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                    :class="{ 'border-slate-300': item.status === 'idle', 'border-green-500': item.status === 'valid', 'border-amber-400': item.status === 'partial', 'border-red-500': item.status === 'invalid' }"
+                                    class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm focus-visible:outline-none transition-all placeholder:text-muted-foreground"
+                                    placeholder="Ex: Responsable CRM, Clients finaux...">
+                                
+                                <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                     :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                     class="mt-1 text-sm p-2 rounded-md">
+                                    <span x-text="item.feedback"></span>
+                                </div>
+                            </div>
+                            <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                        <span class="text-lg leading-none">+</span> Ajouter
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. Objectifs et résultats -->
+            <section class="space-y-6">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">2</span>
+                        Objectifs et Résultats
+                    </h2>
+                </div>
+
+                <!-- Q1 -->
+                <div x-data="dynamicListLogic('Quels sont les objectifs métier à atteindre ?')">
+                    <label class="block text-lg font-medium text-slate-900 mb-3">Quels sont les objectifs métier à atteindre ?</label>
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="mb-4 flex gap-2 items-start">
+                            <div class="relative flex-1">
+                                <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                    :class="{ 'border-slate-300': item.status === 'idle', 'border-green-500': item.status === 'valid', 'border-red-500': item.status === 'invalid' }"
+                                    class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm transition-colors outline-none placeholder:text-muted-foreground"
+                                    placeholder="Ex: Augmenter la fidélité client de 20%...">
+                                
+                                <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                     :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                     class="mt-1 text-sm p-2 rounded-md">
+                                    <span x-text="item.feedback"></span>
+                                </div>
+                            </div>
+                            <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                        <span class="text-lg leading-none">+</span> Ajouter
+                    </button>
+                </div>
+
+                <!-- Q2 -->
+                <div x-data="dynamicListLogic('Quels bénéfices concrets attendez-vous ?')" class="mt-6">
+                    <label class="block text-lg font-medium text-slate-900 mb-3">Quels bénéfices ou changements concrets attendez-vous ?</label>
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="mb-4 flex gap-2 items-start">
+                            <div class="relative flex-1">
+                                <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                    :class="{ 'border-slate-300': item.status === 'idle', 'border-green-500': item.status === 'valid', 'border-red-500': item.status === 'invalid' }"
+                                    class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm transition-colors outline-none placeholder:text-muted-foreground"
+                                    placeholder="Ex: Tableau de bord temps réel...">
+                                
+                                <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                     :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                     class="mt-1 text-sm p-2 rounded-md">
+                                    <span x-text="item.feedback"></span>
+                                </div>
+                            </div>
+                            <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                        <span class="text-lg leading-none">+</span> Ajouter
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. Alignement stratégique -->
+            <section class="space-y-6" x-data="simpleFieldLogic('Comment ce projet contribue-t-il à la stratégie de l’entreprise ?')">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">3</span>
+                        Alignement Stratégique
+                    </h2>
+                </div>
+                <div>
+                    <label class="block text-lg font-medium text-slate-900 mb-3">Comment ce projet contribue-t-il à la stratégie de l’entreprise ?</label>
+                    <div class="relative">
+                        <textarea x-model="value" @blur="validate()"
+                            :class="{ 'border-slate-300': status === 'idle', 'border-green-500': status === 'valid', 'border-red-500': status === 'invalid' }"
+                            class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm outline-none transition-colors placeholder:text-muted-foreground"
+                            placeholder="Ex: S’inscrit dans la feuille de route..."></textarea>
+                        <div x-show="status === 'analyzing'" class="absolute top-3 right-3">
+                             <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </div>
+                    </div>
+                    <div x-show="status !== 'idle' && status !== 'analyzing'" x-transition 
+                         :class="{'bg-feedback-valid': status==='valid', 'bg-feedback-partial': status==='partial', 'bg-feedback-invalid': status==='invalid'}"
+                         class="mt-2 text-sm p-3 rounded-md">
+                        <div x-text="feedback"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Exigences fonctionnelles & non fonctionnelles -->
+            <section class="space-y-6">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">4</span>
+                        Exigences & Contraintes
+                    </h2>
+                </div>
+
+                <!-- Functional Requirements -->
+                <div x-data="dynamicListLogic('Quelles sont les fonctionnalités principales attendues ?')">
+                    <label class="block text-lg font-medium text-slate-900 mb-3 flex items-center gap-2">
+                        Fonctionnalités principales <span class="text-sm font-normal text-muted-foreground bg-slate-100 px-2 py-1 rounded">Must have</span>
+                    </label>
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="mb-4 flex gap-2 items-start">
+                            <div class="relative flex-1">
+                                <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                     :class="{ 'border-slate-300': item.status === 'idle', 'border-green-500': item.status === 'valid', 'border-red-500': item.status === 'invalid' }"
+                                    class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm transition-colors outline-none placeholder:text-muted-foreground"
+                                    placeholder="Ex: Consultation des points fidélité...">
+                                
+                                <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                     :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                     class="mt-1 text-sm p-2 rounded-md">
+                                    <span x-text="item.feedback"></span>
+                                </div>
+                            </div>
+                            <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                        <span class="text-lg leading-none">+</span> Ajouter
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                    <!-- Non-functional Requirements -->
+                    <div x-data="dynamicListLogic('Exigences non fonctionnelles ?')">
+                        <label class="block text-lg font-medium text-slate-900 mb-3">Exigences non fonctionnelles</label>
+                        <template x-for="(item, index) in items" :key="item.id">
+                            <div class="mb-4 flex gap-2 items-start">
+                                <div class="relative flex-1">
+                                    <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                        :class="{ 'border-slate-300': item.status === 'idle', 'border-green-500': item.status === 'valid', 'border-red-500': item.status === 'invalid' }"
+                                        class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm transition-colors outline-none placeholder:text-muted-foreground"
+                                        placeholder="Ex: Temps de réponse < 2s...">
+                                    
+                                    <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                         :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                         class="mt-1 text-sm p-2 rounded-md">
+                                        <span x-text="item.feedback"></span>
+                                    </div>
+                                </div>
+                                <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </template>
+                        <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                           <span class="text-xl leading-none">+</span> Ajouter
+                        </button>
+                    </div>
+
+                    <!-- Constraints -->
+                    <div x-data="dynamicListLogic('Contraintes ?')">
+                        <label class="block text-lg font-medium text-slate-900 mb-3">Contraintes</label>
+                        <template x-for="(item, index) in items" :key="item.id">
+                             <div class="mb-4 flex gap-2 items-start">
+                                <div class="relative flex-1">
+                                    <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                        :class="{ 'border-slate-300': item.status === 'idle', 'border-green-500': item.status === 'valid', 'border-red-500': item.status === 'invalid' }"
+                                        class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm transition-colors outline-none placeholder:text-muted-foreground"
+                                        placeholder="Ex: Hébergement en Europe...">
+                                    
+                                    <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                         :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                         class="mt-1 text-sm p-2 rounded-md">
+                                        <span x-text="item.feedback"></span>
+                                    </div>
+                                </div>
+                                <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </template>
+                        <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                           <span class="text-xl leading-none">+</span> Ajouter
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Mode d'implémentation -->
+            <section class="space-y-6">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">5</span>
+                        Mode d'implémentation
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="cursor-pointer relative">
+                        <input type="radio" name="impl_type" value="make" class="peer sr-only">
+                        <div class="p-5 rounded-lg border-2 border-slate-200 hover:border-slate-300 peer-checked:border-slate-900 peer-checked:bg-slate-50 transition-all h-full">
+                            <h3 class="font-bold text-lg text-slate-900">Make</h3>
+                            <p class="text-slate-500">Développement spécifique interne</p>
+                        </div>
+                        <div class="absolute top-5 right-5 opacity-0 peer-checked:opacity-100 text-slate-900 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer relative">
+                        <input type="radio" name="impl_type" value="buy" class="peer sr-only">
+                        <div class="p-5 rounded-lg border-2 border-slate-200 hover:border-slate-300 peer-checked:border-slate-900 peer-checked:bg-slate-50 transition-all h-full">
+                            <h3 class="font-bold text-lg text-slate-900">Buy</h3>
+                            <p class="text-slate-500">Achat d’un progiciel / SaaS</p>
+                        </div>
+                        <div class="absolute top-5 right-5 opacity-0 peer-checked:opacity-100 text-slate-900 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                    </label>
+                    
+                    <label class="cursor-pointer relative">
+                        <input type="radio" name="impl_type" value="integration" class="peer sr-only">
+                        <div class="p-5 rounded-lg border-2 border-slate-200 hover:border-slate-300 peer-checked:border-slate-900 peer-checked:bg-slate-50 transition-all h-full">
+                            <h3 class="font-bold text-lg text-slate-900">Integration</h3>
+                            <p class="text-slate-500">Intégration solution existante</p>
+                        </div>
+                        <div class="absolute top-5 right-5 opacity-0 peer-checked:opacity-100 text-slate-900 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                    </label>
+
+                     <label class="cursor-pointer relative">
+                        <input type="radio" name="impl_type" value="rollout" class="peer sr-only">
+                        <div class="p-5 rounded-lg border-2 border-slate-200 hover:border-slate-300 peer-checked:border-slate-900 peer-checked:bg-slate-50 transition-all h-full">
+                            <h3 class="font-bold text-lg text-slate-900">Roll-out</h3>
+                            <p class="text-slate-500">Déploiement solution groupe</p>
+                        </div>
+                        <div class="absolute top-5 right-5 opacity-0 peer-checked:opacity-100 text-slate-900 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="mt-4" x-data="simpleFieldLogic('Justification du choix d\'implémentation')">
+                    <label class="block text-lg font-medium text-slate-900 mb-3">Justification du choix</label>
+                    <textarea x-model="value" @blur="validate()"
+                        :class="{ 'border-slate-300': status === 'idle', 'border-green-500': status === 'valid', 'border-red-500': status === 'invalid' }"
+                        class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm outline-none placeholder:text-muted-foreground"
+                        placeholder="Ex: Make car besoin spécifique non couvert..."></textarea>
+                     <div x-show="status !== 'idle' && status !== 'analyzing'" x-transition 
+                          :class="{'bg-feedback-valid': status==='valid', 'bg-feedback-partial': status==='partial', 'bg-feedback-invalid': status==='invalid'}"
+                          class="mt-1 text-sm p-2 rounded-md">
+                        <span x-text="feedback"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Utilisateurs et rôles -->
+            <section class="space-y-6">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">6</span>
+                        Utilisateurs et Rôles
+                    </h2>
+                </div>
+
+                <!-- User Roles Dynamic -->
+                <div x-data="dynamicListLogic('Qui utilisera la solution (Rôle et Action) ?')">
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="mb-4 flex gap-2 items-start">
+                            <div class="relative flex-1">
+                                <div class="flex items-center gap-2 rounded-md border border-input bg-white px-3 py-1 shadow-sm focus-within:ring-2 focus-within:ring-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                        class="flex-1 border-none bg-transparent px-2 py-2 text-lg focus:ring-0 focus:outline-none placeholder:text-muted-foreground"
+                                        placeholder="Role : Action">
+                                </div>
+                                <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                     :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                     class="mt-1 text-sm p-2 rounded-md">
+                                    <span x-text="item.feedback"></span>
+                                </div>
+                            </div>
+                            <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                        <span class="text-lg leading-none">+</span> Ajouter
+                    </button>
+                </div>
+            </section>
+
+            <!-- 7. Architecture & Integrations -->
+            <section class="space-y-6">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">7</span>
+                        Architecture & Intégrations
+                    </h2>
+                </div>
+
+                <div x-data="simpleFieldLogic('Cette solution remplace-t-elle un existant ?')">
+                    <label class="block text-lg font-medium text-slate-900 mb-3">Cette solution remplace-t-elle un existant ?</label>
+                    <textarea x-model="value" @blur="validate()"
+                        :class="{ 'border-slate-300': status === 'idle', 'border-green-500': status === 'valid', 'border-red-500': status === 'invalid' }"
+                        class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm outline-none placeholder:text-muted-foreground !min-h-[80px]"
+                        placeholder="Ex: Remplacement de l’outil CRM maison..."></textarea>
+                     <div x-show="status !== 'idle' && status !== 'analyzing'" x-transition 
+                          :class="{'bg-feedback-valid': status==='valid', 'bg-feedback-partial': status==='partial', 'bg-feedback-invalid': status==='invalid'}"
+                          class="mt-1 text-sm p-2 rounded-md">
+                        <span x-text="feedback"></span>
+                    </div>
+                </div>
+
+                <div x-data="dynamicListLogic('Intégrations nécessaires (SI)')" class="mt-6">
+                     <label class="block text-lg font-medium text-slate-900 mb-3">Intégrations nécessaires (SI)</label>
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="mb-4 flex gap-2 items-start">
+                            <div class="relative flex-1">
+                                <input type="text" x-model="item.value" @blur="validateItem(index)"
+                                    :class="{ 'border-slate-300': item.status === 'idle', 'border-green-500': item.status === 'valid', 'border-red-500': item.status === 'invalid' }"
+                                    class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm outline-none placeholder:text-muted-foreground"
+                                    placeholder="Ex: ERP (SAP), Portail client...">
+                                
+                                <div x-show="item.status !== 'idle' && item.status !== 'analyzing'" x-transition 
+                                     :class="{'bg-feedback-valid': item.status==='valid', 'bg-feedback-partial': item.status==='partial', 'bg-feedback-invalid': item.status==='invalid'}"
+                                     class="mt-1 text-sm p-2 rounded-md">
+                                    <span x-text="item.feedback"></span>
+                                </div>
+                            </div>
+                            <button type="button" @click="removeItem(index)" class="p-3 shrink-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="addItem()" class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors">
+                       <span class="text-lg leading-none">+</span> Ajouter
+                    </button>
+                </div>
+            </section>
+
+            <!-- 8. Cycle de vie -->
+            <section class="space-y-6">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">8</span>
+                        Gouvernance & Évolutivité
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div x-data="simpleFieldLogic('Qui assurera la maintenance ?')">
+                        <label class="block text-lg font-medium text-slate-900 mb-3">Maintenance</label>
+                        <input type="text" x-model="value" @blur="validate()"
+                            :class="{ 'border-slate-300': status === 'idle', 'border-green-500': status === 'valid', 'border-red-500': status === 'invalid' }"
+                            class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm outline-none placeholder:text-muted-foreground"
+                            placeholder="Ex: Équipe interne...">
+                         <div x-show="status !== 'idle' && status !== 'analyzing'" x-transition 
+                              :class="{'bg-feedback-valid': status==='valid', 'bg-feedback-partial': status==='partial', 'bg-feedback-invalid': status==='invalid'}"
+                              class="mt-1 text-sm p-2 rounded-md">
+                            <span x-text="feedback"></span>
+                        </div>
+                    </div>
+                    <div x-data="simpleFieldLogic('Exigences d\'évolutivité ?')">
+                        <label class="block text-lg font-medium text-slate-900 mb-3">Exigences d'évolutivité</label>
+                         <input type="text" x-model="value" @blur="validate()"
+                            :class="{ 'border-slate-300': status === 'idle', 'border-green-500': status === 'valid', 'border-red-500': status === 'invalid' }"
+                            class="w-full rounded-md border bg-transparent px-4 py-3 text-lg shadow-sm outline-none placeholder:text-muted-foreground"
+                            placeholder="Ex: Scalabilité horizontale...">
+                         <div x-show="status !== 'idle' && status !== 'analyzing'" x-transition 
+                              :class="{'bg-feedback-valid': status==='valid', 'bg-feedback-partial': status==='partial', 'bg-feedback-invalid': status==='invalid'}"
+                              class="mt-1 text-sm p-2 rounded-md">
+                            <span x-text="feedback"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions -->
+            <div class="pt-10 border-t border-slate-200 flex items-center justify-end gap-4">
+                <button type="button" class="px-6 py-3 rounded-md text-lg font-medium text-slate-700 hover:bg-slate-100 transition-colors">
+                    Enregistrer en brouillon
+                </button>
+                <button type="submit" class="px-8 py-3 rounded-md text-lg font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <span>Valider le cadrage</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+            </div>
+
+        </form>
+    </main>
+
+</body>
+</html>
