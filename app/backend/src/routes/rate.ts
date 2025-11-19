@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import fs from 'node:fs';
-import path from 'node:path';
-import yaml from 'js-yaml';
-import { fileURLToPath } from 'node:url';
 import { LLMClient } from '../lib/genai/llmClient';
 import { z } from 'zod';
+import { buildRatingResponseSchema } from '../lib/genai/utils/schema_preparation';
+import { mapRatingsByPaths } from '../lib/genai/utils/map_ratings';
+import { loadRateTemplate, composeRatePrompt, type RateTemplate } from '../lib/genai/utils/rate_prompt';
 
 const router = Router();
 
@@ -19,36 +18,7 @@ const RATING_SCHEMA = z.object({
   ),
 });
 
-type RateTemplate = {
-  task: string;
-  context: { form_spec: string; user_input: string };
-  guidelines: string;
-  output_schema: string;
-  final_instruction: string;
-};
-
-function loadTemplate(): RateTemplate {
-  const baseDir = path.dirname(fileURLToPath(import.meta.url));
-  const p = path.join(baseDir, '..', 'lib', 'genai', 'prompts', 'rate.yaml');
-  // In ts-node/tsc out dir, adjust if necessary
-  const alt = path.join(process.cwd(), 'src', 'lib', 'genai', 'prompts', 'rate.yaml');
-  const filePath = fs.existsSync(p) ? p : alt;
-  const raw = fs.readFileSync(filePath, 'utf-8');
-  const doc = yaml.load(raw) as any;
-  return doc as RateTemplate;
-}
-
-function composePrompt(tpl: RateTemplate, vars: { spec_json: string; value_json: string }): string {
-  const sections = [
-    tpl.task,
-    tpl.context?.form_spec?.replace('{{spec_json}}', vars.spec_json) ?? '',
-    tpl.context?.user_input?.replace('{{value_json}}', vars.value_json) ?? '',
-    tpl.guidelines,
-    tpl.output_schema,
-    tpl.final_instruction,
-  ].filter(Boolean);
-  return sections.join('\n\n');
-}
+// prompt loading and composition moved to utils/rate_prompt.ts
 
 router.post('/rate', async (req, res) => {
   try {
@@ -58,14 +28,19 @@ router.post('/rate', async (req, res) => {
     }
 
     const llm = new LLMClient();
-    const tpl = loadTemplate();
-    const prompt = composePrompt(tpl, {
+    const tpl = loadRateTemplate();
+    const prompt = composeRatePrompt(tpl, {
       spec_json: JSON.stringify(spec, null, 2),
       value_json: JSON.stringify(value ?? {}, null, 2),
     });
 
-    const result = await llm.generateStructured({ prompt, schema: RATING_SCHEMA });
-    res.json({ ok: true, data: result });
+    // Build a response schema aligned with the spec (flattened array)
+    const responseSchema = buildRatingResponseSchema();
+    const result = await llm.generateStructured({ prompt, schema: responseSchema });
+
+    // Map to frontend shape using a dedicated utility
+    const ratings = mapRatingsByPaths(spec, result);
+    res.json({ ok: true, data: { ratings } });
   } catch (e) {
     console.error(e);
     res.status(200).json({ ok: true, data: { ratings: {} } });

@@ -1,0 +1,6 @@
+
+
+model: gemini-pro-latest
+
+generation:
+  temperature: 0.2
