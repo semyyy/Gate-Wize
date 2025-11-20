@@ -8,6 +8,7 @@ export type Section = {
   description?: string;
   questions: Question[];
 };
+export type Question = SimpleQuestion | OptionQuestion | DetailedQuestion;
 
 export type SimpleQuestion = {
   type: 'simple';
@@ -40,7 +41,7 @@ export type DetailedAttribute = {
   options?: string[]; // when present, the column renders a select
 };
 
-export type Question = SimpleQuestion | OptionQuestion | DetailedQuestion;
+
 
 
 

@@ -13,8 +13,14 @@ export function StructuredForm({ spec, onChange, ratings }: { spec: FormSpec; on
   const set = (key: string, v: unknown) => {
     const next = { ...value, [key]: v };
     setValue(next);
-    onChange?.(next);
+    if (onChange) onChange(next);
   };
+
+  useEffect(() => {
+    setValue({});
+    if (onChange) onChange({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spec]);
 
   return (
     <div className="grid gap-4">

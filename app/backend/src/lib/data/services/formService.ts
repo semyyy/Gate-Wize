@@ -5,7 +5,11 @@ const BUCKET = process.env.MINIO_BUCKET ?? 'forms';
 
 export async function saveForm(id: string, spec: unknown) {
   const key = `form/${id}.json`;
-  await putJSON(key, spec);
+  let toStore: unknown = spec;
+  if (spec && typeof spec === 'object' && !Array.isArray(spec)) {
+    toStore = { ...(spec as any) };
+  }
+  await putJSON(key, toStore);
   return { key };
 }
 
@@ -41,8 +45,8 @@ export async function listForms() {
   const meta = [] as Array<{ id: string; name: string }>;
   for (const id of ids) {
     try {
-      const data = await loadForm(id);
-      const name = data?.name && typeof data.name === 'string' ? data.name : id;
+      const obj = await loadForm(id);
+      const name = obj?.name && typeof obj.name === 'string' ? obj.name : id;
       meta.push({ id, name });
     } catch {
       meta.push({ id, name: id });

@@ -1,6 +1,4 @@
 "use client";
-
-import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,12 +6,6 @@ import type { DetailedQuestion } from '../types';
 
 export function DetailedQuestionView({ q, path, value, onChange }: { q: DetailedQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void }) {
   const rows: Record<string, unknown>[] = (value[path] as Record<string, unknown>[]) ?? [];
-  useEffect(() => {
-    if ((!rows || rows.length === 0) && Array.isArray(q.examples) && q.examples.length > 0) {
-      onChange(q.examples);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q.examples, rows?.length]);
   const addRow = () => {
     const empty: Record<string, unknown> = {};
     for (const attr of q.attributes) empty[attr.name] = '';

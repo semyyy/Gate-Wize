@@ -3,10 +3,25 @@ import { saveForm, loadForm, listForms, deleteForm, formExists } from '../lib/da
 
 const router = Router();
 
-router.post('/save/:id', async (req, res) => {
+router.post('/save/', async (req, res) => {
   try {
-    const id = req.params.id;
-    const spec = req.body;
+    // accept { spec, name } or raw spec
+    const body = req.body;
+    let spec: any = body;
+    if (body && typeof body === 'object' && 'spec' in body) {
+      spec = body.spec;
+    }
+    console.log('Saving form:', spec.name, spec);
+    //noramalie spec name to id "-" seperated lowercase
+    const id = spec.name
+    .toLowerCase()          // lowercase
+    .trim()                 // remove extra spaces at ends
+    .replace(/\s+/g, '-')   // replace spaces with '-'
+    .replace(/[^\w\-]/g, ''); // remove non-word characters except '-'
+    if (!id || typeof id !== 'string') {
+      throw new Error('Invalid form name');
+    }
+
     await saveForm(id, spec);
     res.json({ ok: true });
   } catch (e) {

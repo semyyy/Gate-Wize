@@ -25,11 +25,12 @@ export async function formExists(id: string): Promise<boolean> {
   return Boolean(j?.data);
 }
 
-export async function saveForm(id: string, spec: FormSpec): Promise<void> {
-  const r = await fetch(`${API_BASE}/api/form/save/${encodeURIComponent(id)}`, {
+export async function saveForm(spec: FormSpec): Promise<void> {
+  const toSend: any = { ...spec };
+  const r = await fetch(`${API_BASE}/api/form/save`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(spec),
+    body: JSON.stringify(toSend),
   });
   if (!r.ok) throw new Error(`save failed: ${r.status}`);
 }
@@ -37,6 +38,15 @@ export async function saveForm(id: string, spec: FormSpec): Promise<void> {
 export async function deleteForm(id: string): Promise<void> {
   const r = await fetch(`${API_BASE}/api/form/delete/${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!r.ok) throw new Error(`delete failed: ${r.status}`);
+}
+
+export async function renameForm(id: string, name: string): Promise<void> {
+  const r = await fetch(`${API_BASE}/api/form/rename/${encodeURIComponent(id)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!r.ok) throw new Error(`rename failed: ${r.status}`);
 }
 
 export type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string };

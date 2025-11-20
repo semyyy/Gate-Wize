@@ -6,8 +6,8 @@ import { useFormList } from '@/hooks/useFormList';
 import { loadForm, rateForm, type FieldRating, type RatingsResponse } from '@/lib/formApi';
 import type { FormSpec } from '@/components/structured-form/types';
 import ViewerToolbar from '@/components/forms/ViewerToolbar';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+// Using browser print for PDF export; removed jsPDF/html2canvas
+import GenAiLoadingOverlay from '@/components/ai/GenAiLoadingOverlay';
 
 export default function UserPage() {
   const { forms, loading, justRefreshed } = useFormList();
@@ -23,48 +23,29 @@ export default function UserPage() {
     if (!currentId && forms.length > 0) setCurrentId(forms[0].id);
   }, [forms, currentId]);
 
+  // Clear answers and ratings when switching forms
+  useEffect(() => {
+    setValue({});
+    setRatings({});
+  }, [currentId]);
+
   useEffect(() => {
     (async () => {
       if (!currentId) {
         setSpec(null);
         return;
       }
-      const s = await loadForm(currentId);
-      setSpec(s);
+      const loaded = await loadForm(currentId);
+      setSpec(loaded);
     })();
   }, [currentId]);
 
   const handleExportPdf = async () => {
-    if (!containerRef.current) return;
     try {
       setExporting(true);
-      const element = containerRef.current;
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      const filename = `${currentId ?? 'form'}.pdf`;
-      pdf.save(filename);
+      setTimeout(() => window.print(), 50);
     } finally {
-      setExporting(false);
+      setTimeout(() => setExporting(false), 300);
     }
   };
 
@@ -82,6 +63,7 @@ export default function UserPage() {
   return (
     <div className="grid grid-cols-1 gap-0 md:gap-2 p-0 md:p-4 h-[100dvh]">
       <section className="rounded-lg border p-0 flex flex-col min-h-0">
+        <div className="no-print">
         <ViewerToolbar
           forms={forms}
           currentId={currentId}
@@ -91,9 +73,15 @@ export default function UserPage() {
           onExportPdf={handleExportPdf}
           onRate={handleRate}
         />
-        <div ref={containerRef} className="px-4 py-4 flex-1 min-h-0 overflow-auto">
+        </div>
+        <div ref={containerRef} className="print-area relative px-4 py-4 flex-1 min-h-0 overflow-auto">
+          {ratingLoading ? (
+            <GenAiLoadingOverlay title="AI Rating in progress" subtitle="Reviewing your answers and crafting feedback…" />
+          ) : null}
           {spec ? (
-            <StructuredForm spec={spec} onChange={setValue} ratings={ratings} />
+            <div className="avoid-break">
+              <StructuredForm spec={spec} onChange={setValue} ratings={ratings} />
+            </div>
           ) : forms.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">No forms available.</div>
           ) : (
