@@ -13,7 +13,7 @@ import GenAiLoadingOverlay from '@/components/ai/GenAiLoadingOverlay';
 
 export default function UserPage() {
   const { forms, loading, justRefreshed } = useFormList();
-  const { loadFormData, saveFormData, clearFormData } = useFormPersistence();
+  const { loadFormData, saveFormData, clearFormData, loadRatings, saveRatings } = useFormPersistence();
   const [currentId, setCurrentId] = useState<string | undefined>(undefined);
   const [spec, setSpec] = useState<FormSpec | null>(null);
   const [value, setValue] = useState<Record<string, unknown>>({});
@@ -27,16 +27,18 @@ export default function UserPage() {
     if (!currentId && forms.length > 0) setCurrentId(forms[0].id);
   }, [forms, currentId]);
 
-  // Load persisted data when switching forms
+  // Load persisted data and ratings when switching forms
   useEffect(() => {
     if (currentId) {
       const persisted = loadFormData(currentId);
+      const persistedRatings = loadRatings(currentId);
       setValue(persisted);
+      setRatings(persistedRatings);
     } else {
       setValue({});
+      setRatings({});
     }
-    setRatings({});
-  }, [currentId, loadFormData]);
+  }, [currentId, loadFormData, loadRatings]);
 
   useEffect(() => {
     (async () => {
@@ -58,17 +60,6 @@ export default function UserPage() {
     }
   };
 
-  const handleRate = async () => {
-    if (!spec) return;
-    try {
-      setRatingLoading(true);
-      const result: RatingsResponse = await rateForm(spec, value);
-      setRatings(result?.ratings ?? {});
-    } finally {
-      setRatingLoading(false);
-    }
-  };
-
   const handleClearForm = () => {
     if (!currentId) return;
     setClearDialogOpen(true);
@@ -76,10 +67,25 @@ export default function UserPage() {
 
   const confirmClearForm = () => {
     if (!currentId) return;
-    clearFormData(currentId);
+    clearFormData(currentId); // This now clears both form data and ratings
     setValue({});
     setRatings({});
     setClearDialogOpen(false);
+  };
+
+  const handleRatingChange = (path: string, rating: { comment: string; rate?: 'invalid' | 'partial' | 'valid' } | null) => {
+    if (!rating || !currentId) return;
+
+    const updatedRatings = {
+      ...ratings,
+      [path]: {
+        comment: rating.comment,
+        rate: rating.rate || 'partial',
+      },
+    };
+
+    setRatings(updatedRatings);
+    saveRatings(currentId, updatedRatings);
   };
 
   const handleValueChange = (newValue: Record<string, unknown>) => {
@@ -88,6 +94,7 @@ export default function UserPage() {
       saveFormData(currentId, newValue);
     }
   };
+
 
   return (
     <div className="grid grid-cols-1 gap-0 md:gap-2 p-0 md:p-4 h-[100dvh]">
@@ -100,7 +107,6 @@ export default function UserPage() {
             loading={loading || exporting}
             justRefreshed={justRefreshed}
             onExportPdf={handleExportPdf}
-            onRate={handleRate}
             onClearForm={handleClearForm}
           />
         </div>
@@ -110,7 +116,7 @@ export default function UserPage() {
           ) : null}
           {spec ? (
             <div className="avoid-break">
-              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings} />
+              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings} onRatingChange={handleRatingChange} />
             </div>
           ) : forms.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">No forms available.</div>

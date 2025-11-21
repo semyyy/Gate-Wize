@@ -10,7 +10,6 @@ export default function ViewerToolbar({
   loading,
   justRefreshed,
   onExportPdf,
-  onRate,
   onClearForm,
 }: {
   forms: { id: string; name: string }[];
@@ -19,7 +18,6 @@ export default function ViewerToolbar({
   loading: boolean;
   justRefreshed?: boolean;
   onExportPdf?: () => void;
-  onRate?: () => void;
   onClearForm?: () => void;
 }) {
   const nameCounts = React.useMemo(() => {
@@ -76,15 +74,6 @@ export default function ViewerToolbar({
       ) : null}
 
       <div className="flex-1" />
-      <button
-        className="border rounded px-3 py-1 text-sm disabled:opacity-50"
-        onClick={onRate}
-        disabled={!currentId || loading}
-        title="Rate fields"
-        aria-label="Rate"
-      >
-        Rate
-      </button>
       <button
         className="border rounded px-3 py-1 text-sm disabled:opacity-50"
         onClick={onExportPdf}

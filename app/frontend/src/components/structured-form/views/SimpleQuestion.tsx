@@ -1,10 +1,36 @@
 "use client";
 
+import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { SimpleQuestion } from '../types';
+import { rateField, type FieldRatingResult } from '@/lib/formApi';
+import { FieldRatingView, type FieldRating } from '../ratings/FieldRating';
 
-export function SimpleQuestionView({ q, path, value, onChange }: { q: SimpleQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void }) {
+export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, rating }: { q: SimpleQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; rating?: FieldRating }) {
+  const [isRating, setIsRating] = useState(false);
+
+  const handleBlur = async () => {
+    console.log('[SimpleQuestion] handleBlur called', { path, onRatingChange: !!onRatingChange });
+    const currentValue = (value[path] as string) ?? '';
+    console.log('[SimpleQuestion] currentValue:', currentValue);
+
+    if (!currentValue.trim() || !onRatingChange) {
+      console.log('[SimpleQuestion] Skipping rating - empty or no callback');
+      return;
+    }
+
+    console.log('[SimpleQuestion] Starting rating...');
+    setIsRating(true);
+    const ratingResult = await rateField(q.question, currentValue, q.examples);
+    console.log('[SimpleQuestion] Rating result:', ratingResult);
+    setIsRating(false);
+
+    if (ratingResult) {
+      onRatingChange(path, ratingResult);
+    }
+  };
+
   return (
     <div>
       <div className="mb-3">
@@ -13,12 +39,22 @@ export function SimpleQuestionView({ q, path, value, onChange }: { q: SimpleQues
           <div className="mt-1 text-sm text-muted-foreground">{q.description}</div>
         ) : null}
       </div>
-      <Textarea
-        className="w-full rounded-md border border-slate-300 bg-transparent px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-        placeholder={q.examples && q.examples.length > 0 ? `e.g. ${q.examples.join(', ')}` : undefined}
-        value={(value[path] as string) ?? ''}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <div className="relative">
+        <Textarea
+          className="w-full rounded-md border border-slate-300 bg-transparent px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          placeholder={q.examples && q.examples.length > 0 ? `e.g. ${q.examples.join(', ')}` : undefined}
+          value={(value[path] as string) ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={handleBlur}
+        />
+        {isRating && (
+          <div className="absolute right-3 top-3 flex items-center gap-2 text-xs text-slate-500">
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+            <span>Evaluating...</span>
+          </div>
+        )}
+      </div>
+      {rating && <FieldRatingView rating={rating} />}
     </div>
   );
 }

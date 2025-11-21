@@ -15,7 +15,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 export function buildRatingResponseSchema() {
   const QuestionSchema = z.object({
     sectionTitle: z.string(),
-	questionText: z.string(),
+    questionText: z.string(),
     comment: z.string(),
     rate: z.enum(['invalid', 'partial', 'valid']).optional(),
   });
@@ -25,5 +25,24 @@ export function buildRatingResponseSchema() {
   return RootSchema;
 }
 
+
 // TypeScript type
 export type FlattenedRatingResponse = z.infer<ReturnType<typeof buildRatingResponseSchema>>;
+
+/**
+ * Simple schema for single field rating.
+ * Output shape:
+ * {
+ *   comment: string,
+ *   rate?: 'invalid' | 'partial' | 'valid'
+ * }
+ */
+export function buildFieldRatingSchema() {
+  return z.object({
+    comment: z.string(),
+    rate: z.enum(['invalid', 'partial', 'valid']).optional(),
+  });
+}
+
+// TypeScript type
+export type FieldRatingResponse = z.infer<ReturnType<typeof buildFieldRatingSchema>>;

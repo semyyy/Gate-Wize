@@ -6,12 +6,16 @@ import { SimpleQuestionView } from './views/SimpleQuestion';
 import { OptionQuestionView } from './views/OptionQuestion';
 import { DetailedQuestionView } from './views/DetailedQuestion';
 import { FieldRatingView, type FieldRating } from './ratings/FieldRating';
+import type { FieldRatingResult } from '@/lib/formApi';
 
-export function StructuredForm({ spec, onChange, ratings, value: externalValue }: { spec: FormSpec; onChange?: (value: Record<string, unknown>) => void; ratings?: Record<string, FieldRating>; value?: Record<string, unknown> }) {
+export function StructuredForm({ spec, onChange, ratings: externalRatings, value: externalValue }: { spec: FormSpec; onChange?: (value: Record<string, unknown>) => void; ratings?: Record<string, FieldRating>; value?: Record<string, unknown> }) {
   const [internalValue, setInternalValue] = useState<Record<string, unknown>>({});
+  const [internalRatings, setInternalRatings] = useState<Record<string, FieldRating>>({});
 
   // Use external value if provided, otherwise use internal state
   const value = externalValue !== undefined ? externalValue : internalValue;
+  // Merge external and internal ratings, with internal taking precedence
+  const ratings = { ...externalRatings, ...internalRatings };
 
   const set = (key: string, v: unknown) => {
     const next = { ...value, [key]: v };
@@ -25,11 +29,25 @@ export function StructuredForm({ spec, onChange, ratings, value: externalValue }
     }
   };
 
+  const handleRatingChange = (path: string, rating: FieldRatingResult | null) => {
+    if (!rating) return;
+
+    const fieldRating: FieldRating = {
+      comment: rating.comment,
+      rate: rating.rate || 'partial',
+    };
+
+    // Always update internal ratings
+    setInternalRatings(prev => ({ ...prev, [path]: fieldRating }));
+  };
+
   useEffect(() => {
     if (externalValue === undefined) {
       setInternalValue({});
       if (onChange) onChange({});
     }
+    // Clear ratings when spec changes
+    setInternalRatings({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec]);
 
@@ -49,14 +67,14 @@ export function StructuredForm({ spec, onChange, ratings, value: externalValue }
       </header>
       <div className="p-8 sm:p-10 space-y-12">
         {spec.sections.map((s, si) => (
-          <SectionView key={si} section={s} path={`s${si}`} setValue={set} value={value} ratings={ratings} index={si + 1} />
+          <SectionView key={si} section={s} path={`s${si}`} setValue={set} value={value} ratings={ratings} index={si + 1} onRatingChange={handleRatingChange} />
         ))}
       </div>
     </div>
   );
 }
 
-function SectionView({ section, path, setValue, value, ratings, index }: { section: Section; path: string; setValue: (key: string, v: unknown) => void; value: Record<string, unknown>; ratings?: Record<string, FieldRating>; index: number }) {
+function SectionView({ section, path, setValue, value, ratings, index, onRatingChange }: { section: Section; path: string; setValue: (key: string, v: unknown) => void; value: Record<string, unknown>; ratings?: Record<string, FieldRating>; index: number; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void }) {
   return (
     <section className="space-y-6">
       <div className="border-b border-slate-200 pb-4 mb-6">
@@ -69,11 +87,9 @@ function SectionView({ section, path, setValue, value, ratings, index }: { secti
       <div className="grid gap-6 mt-3">
         {section.questions.map((q, qi) => {
           const qPath = `${path}.q${qi}`;
-          const fr = ratings?.[qPath];
           return (
             <div key={qi} className="space-y-2">
-              <QuestionView q={q} path={qPath} value={value} onChange={(v) => setValue(qPath, v)} />
-              {fr ? <FieldRatingView rating={fr} /> : null}
+              <QuestionView q={q} path={qPath} value={value} onChange={(v) => setValue(qPath, v)} onRatingChange={onRatingChange} ratings={ratings} />
             </div>
           );
         })}
@@ -82,10 +98,10 @@ function SectionView({ section, path, setValue, value, ratings, index }: { secti
   );
 }
 
-function QuestionView({ q, path, value, onChange }: { q: Question; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void }) {
-  if (q.type === 'simple') return <SimpleQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
+function QuestionView({ q, path, value, onChange, onRatingChange, ratings }: { q: Question; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating> }) {
+  if (q.type === 'simple') return <SimpleQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} rating={ratings?.[path]} />;
   if (q.type === 'option') return <OptionQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
-  if (q.type === 'detailed') return <DetailedQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
+  if (q.type === 'detailed') return <DetailedQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} ratings={ratings} />;
   return null;
 }
 

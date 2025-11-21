@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
+import type { FieldRating } from '@/components/structured-form/ratings/FieldRating';
 
 const STORAGE_PREFIX = 'form_data_';
+const RATINGS_PREFIX = 'form_ratings_';
 
 export function useFormPersistence() {
     const saveFormData = useCallback((formId: string, data: Record<string, unknown>) => {
@@ -27,8 +29,10 @@ export function useFormPersistence() {
 
     const clearFormData = useCallback((formId: string) => {
         try {
-            const key = `${STORAGE_PREFIX}${formId}`;
-            localStorage.removeItem(key);
+            const dataKey = `${STORAGE_PREFIX}${formId}`;
+            const ratingsKey = `${RATINGS_PREFIX}${formId}`;
+            localStorage.removeItem(dataKey);
+            localStorage.removeItem(ratingsKey);
         } catch (error) {
             console.error('Failed to clear form data from localStorage:', error);
         }
@@ -39,7 +43,7 @@ export function useFormPersistence() {
             const keysToRemove: string[] = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (key && key.startsWith(STORAGE_PREFIX)) {
+                if (key && (key.startsWith(STORAGE_PREFIX) || key.startsWith(RATINGS_PREFIX))) {
                     keysToRemove.push(key);
                 }
             }
@@ -49,10 +53,44 @@ export function useFormPersistence() {
         }
     }, []);
 
+    const saveRatings = useCallback((formId: string, ratings: Record<string, FieldRating>) => {
+        try {
+            const key = `${RATINGS_PREFIX}${formId}`;
+            localStorage.setItem(key, JSON.stringify(ratings));
+        } catch (error) {
+            console.error('Failed to save ratings to localStorage:', error);
+        }
+    }, []);
+
+    const loadRatings = useCallback((formId: string): Record<string, FieldRating> => {
+        try {
+            const key = `${RATINGS_PREFIX}${formId}`;
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+        } catch (error) {
+            console.error('Failed to load ratings from localStorage:', error);
+        }
+        return {};
+    }, []);
+
+    const clearRatings = useCallback((formId: string) => {
+        try {
+            const key = `${RATINGS_PREFIX}${formId}`;
+            localStorage.removeItem(key);
+        } catch (error) {
+            console.error('Failed to clear ratings from localStorage:', error);
+        }
+    }, []);
+
     return {
         saveFormData,
         loadFormData,
         clearFormData,
         clearAllFormData,
+        saveRatings,
+        loadRatings,
+        clearRatings,
     };
 }

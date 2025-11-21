@@ -62,3 +62,21 @@ export async function rateForm(spec: unknown, value: Record<string, unknown>): P
   const j = await r.json();
   return (j?.data as RatingsResponse) ?? { ratings: {} };
 }
+
+export type FieldRatingResult = { comment: string; rate?: 'invalid' | 'partial' | 'valid' };
+
+export async function rateField(question: string, value: string, examples?: string[]): Promise<FieldRatingResult | null> {
+  try {
+    const r = await fetch(`${API_BASE}/api/llm/rate-field`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, value, examples }),
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return (j?.data as FieldRatingResult) ?? null;
+  } catch (e) {
+    console.error('Field rating error:', e);
+    return null;
+  }
+}

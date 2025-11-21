@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import formRouter from './routes/form';
-import llmRouter from './routes/rate';
+import llmRouter from './routes/rate-field';
 
 
 const app = express();
