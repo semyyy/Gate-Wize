@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DetailedQuestion } from '../types';
-import { rateField, type FieldRatingResult } from '@/lib/formApi';
+import { rateDetailedRow, type FieldRatingResult } from '@/lib/formApi';
 import { FieldRatingView, type FieldRating } from '../ratings/FieldRating';
 
 export function DetailedQuestionView({ q, path, value, onChange, onRatingChange, ratings }: { q: DetailedQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating> }) {
@@ -30,8 +30,16 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
     const ratingKey = `${path}.${ri}.${attrName}`;
     setRatingStates(prev => ({ ...prev, [ratingKey]: true }));
 
-    const question = attrDescription || attrName;
-    const rating = await rateField(question, currentValue, examples);
+    const currentRow = rows[ri] || {};
+
+    // Use rateDetailedRow with the full row context
+    const rating = await rateDetailedRow(
+      q.question,
+      attrDescription || attrName,
+      currentValue,
+      currentRow,
+      examples
+    );
 
     setRatingStates(prev => ({ ...prev, [ratingKey]: false }));
 
@@ -71,12 +79,23 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                 {q.attributes.map((a) => {
                   const ratingKey = `${path}.${ri}.${a.name}`;
                   const isRating = ratingStates[ratingKey] || false;
+                  const currentRating = ratings?.[ratingKey];
+
+                  const getBorderColor = () => {
+                    if (!currentRating) return 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500';
+                    switch (currentRating.rate) {
+                      case 'valid': return 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500 bg-emerald-50/30';
+                      case 'partial': return 'border-amber-500 focus:border-amber-500 focus:ring-amber-500 bg-amber-50/30';
+                      case 'invalid': return 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 bg-rose-50/30';
+                      default: return 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500';
+                    }
+                  };
 
                   return (
                     <td key={a.name} className="border-b border-slate-200 p-2 align-top">
                       {Array.isArray(a.options) && a.options.length > 0 ? (
                         <Select value={(row[a.name] as string) || undefined} onValueChange={(val) => update(ri, a.name, val)}>
-                          <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-md border border-slate-300 bg-transparent px-3 py-2 text-base shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                          <SelectTrigger className={`flex h-12 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-base shadow-sm focus:ring-1 ${getBorderColor()}`}>
                             <SelectValue placeholder="Select an option" />
                             <svg className="ml-2 h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
                           </SelectTrigger>
@@ -93,7 +112,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                         <div className="space-y-2">
                           <div className="relative">
                             <Input
-                              className="w-full rounded-md border border-slate-300 bg-transparent px-3 py-3 text-base shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                              className={`w-full rounded-md border bg-transparent px-3 py-3 text-base shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getBorderColor()}`}
                               placeholder={a.examples && a.examples.length > 0 ? `e.g. ${a.examples.join(', ')}` : undefined}
                               value={(row[a.name] as string) ?? ''}
                               onChange={(e) => update(ri, a.name, e.target.value)}

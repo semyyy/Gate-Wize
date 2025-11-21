@@ -2,7 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import formRouter from './routes/form';
-import llmRouter from './routes/rate-field';
+import rateSimpleFieldRouter from './routes/rate-simple-field';
+import rateDetailedRowRouter from './routes/rate-detailed-row';
 
 
 const app = express();
@@ -16,7 +17,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/form', formRouter);
-app.use('/api/llm', llmRouter);
+app.use('/api/llm', rateSimpleFieldRouter);
+app.use('/api/llm', rateDetailedRowRouter);
 
 app.listen(port, () => {
   console.log(`[backend] listening on http://localhost:${port}`);

@@ -49,6 +49,8 @@ async generateStructured(args: {
     const jsonSchema = typeof args.schema === 'object' && !('parse' in (args.schema || {}))
       ? args.schema
       : zodToJsonSchema(args.schema);
+    console.log('JSON Schema:', jsonSchema);
+    console.log('Prompt:', args.prompt);
     const response = await this.client.models.generateContent({
       model: args.model || this.defaultModel,
       contents: args.prompt,

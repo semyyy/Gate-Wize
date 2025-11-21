@@ -116,7 +116,7 @@ export default function UserPage() {
           ) : null}
           {spec ? (
             <div className="avoid-break">
-              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings} onRatingChange={handleRatingChange} />
+              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings}/>
             </div>
           ) : forms.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">No forms available.</div>

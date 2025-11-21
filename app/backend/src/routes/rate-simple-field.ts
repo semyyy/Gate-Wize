@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import { LLMClient } from '../lib/genai/llmClient';
 import { buildFieldRatingSchema } from '../lib/genai/utils/schema_preparation';
-import { loadFieldRateTemplate, composeFieldRatePrompt } from '../lib/genai/utils/rate_prompt';
-import * as yaml from 'js-yaml';
-import * as fs from 'fs';
-import * as path from 'path';
+import { loadSimpleFieldRateTemplate, composeSimpleFieldRatePrompt } from '../lib/genai/utils/rate_prompt';
 
 const router = Router();
 
-
-router.post('/rate-field', async (req, res) => {
+router.post('/rate-simple-field', async (req, res) => {
     try {
-        const { question, value, examples, questionText, rowContext } = req.body ?? {};
+        const { question, value, examples } = req.body ?? {};
 
         // Validate inputs
         if (!question || typeof question !== 'string') {
@@ -23,27 +19,17 @@ router.post('/rate-field', async (req, res) => {
         }
 
         const llm = new LLMClient();
-        const tpl = loadFieldRateTemplate();
+        const tpl = loadSimpleFieldRateTemplate();
 
         // Format examples
         const examplesStr = Array.isArray(examples) && examples.length > 0
             ? examples.map((ex, i) => `${i + 1}. ${ex}`).join('\n')
             : 'No examples provided.';
 
-        // Format row context
-        const rowContextStr = rowContext && typeof rowContext === 'object'
-            ? Object.entries(rowContext)
-                .filter(([_, v]) => v !== null && v !== undefined && String(v).trim() !== '')
-                .map(([k, v]) => `- ${k}: ${v}`)
-                .join('\n')
-            : '';
-
-        const prompt = composeFieldRatePrompt(tpl, {
+        const prompt = composeSimpleFieldRatePrompt(tpl, {
             question,
             value,
             examples: examplesStr,
-            questionText: questionText || '',
-            rowContext: rowContextStr || 'No additional context.',
         });
 
         const schema = buildFieldRatingSchema();
@@ -51,7 +37,7 @@ router.post('/rate-field', async (req, res) => {
 
         res.json({ ok: true, data: result });
     } catch (e) {
-        console.error('Field rating error:', e);
+        console.error('Simple field rating error:', e);
         res.status(500).json({ ok: false, error: 'Internal server error' });
     }
 });

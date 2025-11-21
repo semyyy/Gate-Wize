@@ -65,9 +65,13 @@ export async function rateForm(spec: unknown, value: Record<string, unknown>): P
 
 export type FieldRatingResult = { comment: string; rate?: 'invalid' | 'partial' | 'valid' };
 
-export async function rateField(question: string, value: string, examples?: string[]): Promise<FieldRatingResult | null> {
+export async function rateSimpleField(
+  question: string,
+  value: string,
+  examples?: string[]
+): Promise<FieldRatingResult | null> {
   try {
-    const r = await fetch(`${API_BASE}/api/llm/rate-field`, {
+    const r = await fetch(`${API_BASE}/api/llm/rate-simple-field`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, value, examples }),
@@ -76,7 +80,29 @@ export async function rateField(question: string, value: string, examples?: stri
     const j = await r.json();
     return (j?.data as FieldRatingResult) ?? null;
   } catch (e) {
-    console.error('Field rating error:', e);
+    console.error('Simple field rating error:', e);
+    return null;
+  }
+}
+
+export async function rateDetailedRow(
+  question: string,
+  attributeName: string,
+  attributeValue: string,
+  rowData: Record<string, unknown>,
+  examples?: string[]
+): Promise<FieldRatingResult | null> {
+  try {
+    const r = await fetch(`${API_BASE}/api/llm/rate-detailed-row`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, attributeName, attributeValue, rowData, examples }),
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return (j?.data as FieldRatingResult) ?? null;
+  } catch (e) {
+    console.error('Detailed row rating error:', e);
     return null;
   }
 }

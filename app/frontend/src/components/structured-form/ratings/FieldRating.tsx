@@ -6,7 +6,11 @@ export type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: stri
 
 export function FieldRatingView({ rating }: { rating: FieldRating }) {
   const idx = rating.rate === 'invalid' ? 0 : rating.rate === 'partial' ? 1 : 2;
-  const colors = ['bg-red-500', 'bg-amber-500', 'bg-emerald-500'] as const;
+  const colors = ['bg-rose-500', 'bg-amber-500', 'bg-emerald-500'] as const;
+  const bgColors = ['bg-rose-50', 'bg-amber-50', 'bg-emerald-50'] as const;
+  const borderColors = ['border-rose-200', 'border-amber-200', 'border-emerald-200'] as const;
+  const textColors = ['text-rose-900', 'text-amber-900', 'text-emerald-900'] as const;
+
   const targetPct = ((idx + 1) / 3) * 100;
   const [pct, setPct] = React.useState<number>(0);
   const initializedRef = React.useRef(false);
@@ -57,21 +61,12 @@ export function FieldRatingView({ rating }: { rating: FieldRating }) {
   }, [rating.rate, rating.comment]);
   return (
     <div className="mt-2">
-      <div className="h-2 rounded bg-gray-200 overflow-hidden">
-        <div
-          className={`h-2 ${colors[idx]} transition-[width] duration-700 ease-in-out`}
-          style={{ width: `${pct}%`, willChange: 'width' }}
-          aria-label={`Rating: ${rating.rate}`}
+      <p className={`text-sm leading-5 ${textColors[idx]} transition-colors duration-300`}>
+        <span>{typed}</span>
+        <span
+          className={`inline-block w-[1px] h-[1.1em] align-[-0.15em] ml-[2px] bg-current ${typingDone ? 'opacity-0' : 'opacity-50'} animate-pulse`}
         />
-      </div>
-      <div className="mt-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
-        <p className="mt-1 text-sm leading-5 text-gray-800">
-          <span>{typed}</span>
-          <span
-            className={`inline-block w-[1px] h-[1.1em] align-[-0.15em] ml-[2px] bg-gray-600 ${typingDone ? 'opacity-0' : 'opacity-80'} animate-pulse`}
-          />
-        </p>
-      </div>
+      </p>
     </div>
   );
 }
