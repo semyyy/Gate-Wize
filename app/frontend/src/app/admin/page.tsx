@@ -11,186 +11,332 @@ import { validateSpec } from '@/lib/validateSpec';
 import { Dialog, DialogContent, DialogHeader, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import InlineRename from '@/components/ui/InlineRename';
 
-const default_form: FormSpec = {
-  name: 'Default Project Form',
-  description: 'Default form template mirroring the project assessment layout',
-  sections: [
+const default_form: FormSpec ={
+  "name": "Default Project Form",
+  "description": "Default form template mirroring the project assessment layout",
+  "sections": [
     {
-      title: 'Drivers & Stakeholders',
-      description: 'understand the context and reasons behind the project',
-      questions: [
+      "title": "Drivers & Stakeholders",
+      "description": "understand the context and reasons behind the project",
+      "questions": [
         {
-          type: 'detailed',
-          question: 'Which problems or opportunities motivate this project?',
-          description: 'Describe current issues or the opportunities to capture.',
-          attributes: [
-            { name: 'type', description: 'Type', options: ['probleme', 'opportunite'] },
-            { name: 'description', description: 'Description / impact' },
+          "type": "detailed",
+          "question": "Which problems or opportunities motivate this project?",
+          "description": "Describe current issues or the opportunities to capture.",
+          "attributes": [
+            {
+              "name": "type",
+              "description": "Type",
+              "options": [
+                "probleme",
+                "opportunite"
+              ]
+            },
+            {
+              "name": "description",
+              "description": "Description / impact",
+              "examples": [
+                "Increase in ROI",
+                "High customer churn in mobile app",
+                "Opportunity to automate manual accounting process"
+              ]
+            }
           ],
-          examples: [
-            { type: 'probleme', description: 'Drop in customer retention rate (-15% over 2 years)' },
-            { type: 'opportunite', description: 'Opportunity to extend sales channels (web + mobile)' },
-          ],
+          
         },
         {
-          type: 'detailed',
-          question: 'Which major stakeholders are involved?',
-          description: 'List the key roles and how they are involved.',
-          attributes: [
-            { name: 'stakeholder', description: 'Stakeholder' },
-            { name: 'role', description: 'Role / Detail' },
+          "type": "detailed",
+          "question": "Which major stakeholders are involved?",
+          "description": "List the key roles and how they are involved.",
+          "attributes": [
+            {
+              "name": "stakeholder",
+              "description": "Stakeholder",
+              "examples": [
+                "Project Manager",
+                "Business Owner",
+                "IT Operations Manager"
+              ]
+            },
+            {
+              "name": "role",
+              "description": "Role / Detail",
+              "examples": [
+                "Oversees the whole project, assigns tasks, contacts client",
+                "Validates functional scope, ensures business alignment",
+                "Manages production deployment and ensures platform stability"
+              ]
+            }
           ],
-          examples: [
-            { stakeholder: 'CRM lead', role: 'Leads the loyalty program, tracks marketing campaigns, owns the CRM strategy.' },
-            { stakeholder: 'End customers', role: 'Use the solution daily (web, mobile) and are impacted by the user experience.' },
-          ],
-        },
-      ],
+         
+        }
+      ]
     },
     {
-      title: 'Objectives and expected results (Goals & Outcomes)',
-      description: 'define the purpose and expected impact',
-      questions: [
+      "title": "Objectives and expected results (Goals & Outcomes)",
+      "description": "define the purpose and expected impact",
+      "questions": [
         {
-          type: 'detailed',
-          question: 'Which business objectives should this project deliver?',
-          description: 'Formulate measurable objectives whenever possible.',
-          attributes: [
-            { name: 'objective', description: 'Business objective' },
-            { name: 'indicator', description: 'Indicator / target' },
+          "type": "detailed",
+          "question": "Which business objectives should this project deliver?",
+          "description": "Formulate measurable objectives whenever possible.",
+          "attributes": [
+            {
+              "name": "objective",
+              "description": "Business objective",
+              "examples": [
+                "Reduce customer support workload",
+                "Increase online conversion rate",
+                "Improve product availability visibility"
+              ]
+            },
+            {
+              "name": "indicator",
+              "description": "Indicator / target",
+              "examples": [
+                "Reduce support tickets by 20% in 6 months",
+                "Increase conversion from 1.8% to 3%",
+                "95% accuracy in stock data across all channels"
+              ]
+            }
           ],
-          examples: [
-            { objective: 'Increase customer loyalty by 20% within 12 months', indicator: 'Repeat purchase rate, average basket size' },
-            { objective: 'Reduce order processing lead time by 30%', indicator: 'Average processing time' },
-          ],
+          
         },
         {
-          type: 'detailed',
-          question: 'What benefits or concrete changes do you expect?',
-          description: 'Focus on results that are visible to users and the business.',
-          attributes: [
-            { name: 'benefit', description: 'Benefit / change' },
-            { name: 'detail', description: 'Detail' },
+          "type": "detailed",
+          "question": "What benefits or concrete changes do you expect?",
+          "description": "Focus on results that are visible to users and the business.",
+          "attributes": [
+            {
+              "name": "benefit",
+              "description": "Benefit / change",
+              "examples": [
+                "Faster checkout process",
+                "Improved data reliability",
+                "Simplified back-office operations"
+              ]
+            },
+            {
+              "name": "detail",
+              "description": "Detail",
+              "examples": [
+                "Reduce number of steps required to validate a purchase",
+                "Automated synchronization between systems",
+                "Less manual intervention required by support teams"
+              ]
+            }
           ],
-          examples: [
-            { benefit: 'Real-time dashboard', detail: 'Real-time tracking of sales, inventory, and channel performance.' },
-            { benefit: 'Fewer complaints', detail: 'Fewer order errors, better customer service quality.' },
-          ],
-        },
-      ],
+        
+        }
+      ]
     },
     {
-      title: 'Strategic alignment',
-      description: 'connect the project to the company vision',
-      questions: [
-        { type: 'simple', question: 'How does this project contribute to the company strategy?', description: 'Link it to transformation, customer experience, e-commerce, etc.' },
-      ],
+      "title": "Strategic alignment",
+      "description": "connect the project to the company vision",
+      "questions": [
+        {
+          "type": "simple",
+          "question": "How does this project contribute to the company strategy?",
+          "description": "Link it to transformation, customer experience, e-commerce, etc.",
+          "examples": [
+            "Supports digital transformation roadmap by migrating legacy processes",
+            "Improves customer experience through faster omnichannel journeys",
+            "Strengthens e-commerce capabilities by modernizing checkout pipeline"
+          ]
+        }
+      ]
     },
     {
-      title: 'Functional & non-functional requirements (Requirements & Constraints)',
-      description: 'describe what the solution must do and under which conditions',
-      questions: [
+      "title": "Functional & non-functional requirements (Requirements & Constraints)",
+      "description": "describe what the solution must do and under which conditions",
+      "questions": [
         {
-          type: 'detailed',
-          question: 'Which main features are expected?',
-          attributes: [
-            { name: 'feature', description: 'Feature' },
-            { name: 'description', description: 'Description / Detail' },
+          "type": "detailed",
+          "question": "Which main features are expected?",
+          "attributes": [
+            {
+              "name": "feature",
+              "description": "Feature",
+              "examples":[
+                "View Loyalty Points"
+              ]
+            },
+            {
+              "name": "description",
+              "description": "Description / Detail",
+              "examples":[
+                "Display balance, points history, and usage rules."
+
+              ]
+            }
           ],
-          examples: [
-            { feature: 'View loyalty points', description: 'Display balance, points history, and usage rules.' },
-            { feature: 'Automated monthly reports', description: 'Automatic report delivery to managers.' },
-          ],
+          
         },
         {
-          type: 'detailed',
-          question: 'Do you have non-functional requirements to consider?',
-          attributes: [
-            { name: 'requirement', description: 'Non-functional requirement' },
-            { name: 'detail', description: 'Detail' },
-          ],
-          examples: [
-            { requirement: 'Response time < 2s', detail: 'For critical ordering journeys' },
-            { requirement: '24/7 availability', detail: 'Availability rate, maintenance windows' },
-          ],
+          "type": "detailed",
+          "question": "Do you have non-functional requirements to consider?",
+          "attributes": [
+            {
+              "name": "requirement",
+              "description": "Non-functional requirement",
+              "examples":[
+                "Response Time < 2s",
+                "24/7 availability"
+              ]
+            },
+            {
+              "name": "detail",
+              "description": "Detail",
+              "examples": [
+                "For critical ordering journeys",
+                "Availability rate, maintenance windows"
+              ]
+            }
+          ]
         },
         {
-          type: 'detailed',
-          question: 'Are there constraints to consider?',
-          attributes: [
-            { name: 'constraint', description: 'Constraint' },
-            { name: 'detail', description: 'Detail' },
+          "type": "detailed",
+          "question": "Are there constraints to consider?",
+          "attributes": [
+            {
+              "name": "constraint",
+              "description": "Constraint",
+              "examples":[
+                "Legacy System dependency"
+              ]
+            },
+            {
+              "name": "detail",
+              "description": "Detail",
+              "examples": [
+                "Must connect to an existing ERP that cannot be modified"
+              ]
+            }
           ],
-          examples: [
-            { constraint: 'Go-live before Black Friday', detail: 'Meet project milestones, code freeze before peak season.' },
-            { constraint: 'Hosting in Europe', detail: 'Comply with GDPR and data residency.' },
-          ],
-        },
-      ],
+          
+        }
+      ]
     },
     {
-      title: 'Solution implementation approach',
-      description: 'identify the nature of the project (make, buy, etc.)',
-      questions: [
-        { type: 'option', question: 'What type of solution are you considering?', options: ['make', 'buy', 'integration', 'rollout', 'autre'], justification: true },
-      ],
+      "title": "Solution implementation approach",
+      "description": "identify the nature of the project (make, buy, etc.)",
+      "questions": [
+        {
+          "type": "option",
+          "question": "What type of solution are you considering?",
+          "options": [
+            "make",
+            "buy",
+            "integration",
+            "rollout",
+            "autre"
+          ],
+          "justification": true,
+        }
+      ]
     },
     {
-      title: 'Users and roles',
-      description: 'identify the system actors',
-      questions: [
+      "title": "Users and roles",
+      "description": "identify the system actors",
+      "questions": [
         {
-          type: 'detailed',
-          question: 'Who will use the solution and what will each user do?',
-          attributes: [
-            { name: 'user_type', description: 'User type' },
-            { name: 'role', description: 'Role in the solution' },
+          "type": "detailed",
+          "question": "Who will use the solution and what will each user do?",
+          "attributes": [
+            {
+              "name": "user_type",
+              "description": "User type",
+              "examples":[
+                "Store manager"
+              ]
+            },
+            {
+              "name": "role",
+              "description": "Role in the solution",
+              "examples":[
+                "Validates local orders and monitors performance"
+              ]
+            }
           ],
-          examples: [
-            { user_type: 'Customer advisor', role: 'Updates customer records, checks history, processes requests.' },
-            { user_type: 'Manager', role: 'Approves requests, monitors team performance.' },
-          ],
-        },
-      ],
+          
+        }
+      ]
     },
     {
-      title: 'Target architecture and integrations',
-      description: 'position the solution within the IS',
-      questions: [
-        { type: 'simple', question: 'Does this solution replace an existing one?', description: 'Indicate which tool or system is replaced, if any.' },
+      "title": "Target architecture and integrations",
+      "description": "position the solution within the IS",
+      "questions": [
         {
-          type: 'detailed',
-          question: 'Does the solution need to integrate with other applications?',
-          attributes: [
-            { name: 'application', description: 'Application / system' },
-            { name: 'usage', description: 'Integration type / usage' },
-          ],
-          examples: [
-            { application: 'ERP (SAP)', usage: 'Exchange order, inventory, and invoicing data.' },
-          ],
+          "type": "simple",
+          "question": "Does this solution replace an existing one?",
+          "description": "Indicate which tool or system is replaced, if any.",
+          "examples": [
+            "Replaces legacy CRM tool",
+            "Modernizes outdated reporting system",
+            "No replacement — new capability"
+          ]
         },
-      ],
+        {
+          "type": "detailed",
+          "question": "Does the solution need to integrate with other applications?",
+          "attributes": [
+            {
+              "name": "application",
+              "description": "Application / system",
+              "examples":[
+                "Payment Gateaway"
+              ]
+            },
+            {
+              "name": "usage",
+              "description": "Integration type / usage",
+              "examples":[
+                "Process online payments and refunds"
+              ]
+            }
+          ],
+          
+        }
+      ]
     },
     {
-      title: 'Lifecycle, governance, and scalability',
-      description: 'plan for maintenance and sustainability',
-      questions: [
-        { type: 'simple', question: 'Who will handle maintenance and scalability for the solution?', description: 'Specify the teams, partners, or vendors.' },
+      "title": "Lifecycle, governance, and scalability",
+      "description": "plan for maintenance and sustainability",
+      "questions": [
         {
-          type: 'detailed',
-          question: 'Do you have portability or scalability requirements?',
-          attributes: [
-            { name: 'requirement', description: 'Requirement' },
-            { name: 'detail', description: 'Detail' },
-          ],
-          examples: [
-            { requirement: 'Horizontal scalability', detail: 'Ability to add nodes to absorb higher workloads.' },
-          ],
+          "type": "simple",
+          "question": "Who will handle maintenance and scalability for the solution?",
+          "description": "Specify the teams, partners, or vendors.",
+          "examples": [
+            "IT Operations team for platform maintenance",
+            "External SaaS provider handles scalability and updates",
+            "Internal development squad ensures feature lifecycle"
+          ]
         },
-      ],
-    },
-  ],
-};
+        {
+          "type": "detailed",
+          "question": "Do you have portability or scalability requirements?",
+          "attributes": [
+            {
+              "name": "requirement",
+              "description": "Requirement",
+              "examples":[
+                "Horizontal scalability"
+              ]
+            },
+            {
+              "name": "detail",
+              "description": "Detail",
+              "examples":[
+                "Support more traffic peaks during seasonal sales"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 
 

@@ -23,7 +23,6 @@ export type OptionQuestion = {
   description?: string;
   options: string[];
   justification?: boolean;
-  examples?: string[];
 };
 
 
@@ -33,13 +32,17 @@ export type DetailedQuestion = {
   question: string;
   description?: string;
   attributes: DetailedAttribute[]; // columns of a table
-  examples?: Record<string, string | number | boolean>[]; // example rows
 };
 export type DetailedAttribute = {
   name: string; // "nom"
   description?: string;
   options?: string[]; // when present, the column renders a select
-};
+  examples?: string[]; // suggested values for the attribute
+} & (
+  | { options: string[]; examples?: never }
+  | { examples: string[]; options?: never }
+  | {}
+);
 
 
 

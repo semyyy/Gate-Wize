@@ -11,40 +11,43 @@ export function OptionQuestionView({ q, path, value, onChange }: { q: OptionQues
   const setSelected = (val: string) => onChange({ ...(value[path] as any), selected: val, justification: (value[`${path}.justification`] as string) ?? '' });
   return (
     <div>
-      <div className="mb-2 md:mb-3">
-        <Label className="block text-base font-semibold text-foreground">{q.question}</Label>
+      <div className="mb-3">
+        <Label className="block text-lg font-medium text-slate-900">{q.question}</Label>
         {q.description ? (
-          <div className="mt-1 text-xs text-muted-foreground leading-relaxed">{q.description}</div>
+          <div className="mt-1 text-sm text-muted-foreground">{q.description}</div>
         ) : null}
       </div>
-      <div className="w-full">
-        <Select value={selected} onValueChange={(val) => onChange(val)}>
-          <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-            <SelectValue placeholder="Select an option" />
-            <svg className="ml-2 h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
-          </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="" className="text-gray-500">Select an option</SelectItem>
-          {q.options.map((opt) => (
-            <SelectItem key={opt} value={opt}>
-              {opt}
-            </SelectItem>
-          ))}
-        </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {q.options.map((opt) => (
+          <label key={opt} className="cursor-pointer relative group">
+            <input
+              type="radio"
+              name={path}
+              value={opt}
+              checked={selected === opt}
+              onChange={() => onChange(opt)}
+              className="peer sr-only"
+            />
+            <div className="p-5 rounded-lg border-2 border-slate-200 hover:border-slate-300 peer-checked:border-slate-900 peer-checked:bg-slate-50 transition-all h-full flex items-center justify-between">
+              <h3 className="font-bold text-lg text-slate-900 capitalize">{opt}</h3>
+              <div className="opacity-0 peer-checked:opacity-100 text-slate-900 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+            </div>
+          </label>
+        ))}
       </div>
       {q.justification && selected && (
-        <div className="mt-2">
+        <div className="mt-4">
           <Textarea
+            className="w-full rounded-md border border-slate-300 bg-transparent px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             placeholder="Justification"
             value={(value[`${path}.justification`] as string) ?? ''}
             onChange={(e) => (value[`${path}.justification`] = e.target.value) && onChange(selected)}
           />
         </div>
       )}
-      {q.examples && q.examples.length > 0 && (
-        <div className="text-muted-foreground mt-1.5 text-xs">Examples: {q.examples.join(', ')}</div>
-      )}
+
     </div>
   );
 }
