@@ -7,18 +7,29 @@ import { OptionQuestionView } from './views/OptionQuestion';
 import { DetailedQuestionView } from './views/DetailedQuestion';
 import { FieldRatingView, type FieldRating } from './ratings/FieldRating';
 
-export function StructuredForm({ spec, onChange, ratings }: { spec: FormSpec; onChange?: (value: Record<string, unknown>) => void; ratings?: Record<string, FieldRating> }) {
-  const [value, setValue] = useState<Record<string, unknown>>({});
+export function StructuredForm({ spec, onChange, ratings, value: externalValue }: { spec: FormSpec; onChange?: (value: Record<string, unknown>) => void; ratings?: Record<string, FieldRating>; value?: Record<string, unknown> }) {
+  const [internalValue, setInternalValue] = useState<Record<string, unknown>>({});
+
+  // Use external value if provided, otherwise use internal state
+  const value = externalValue !== undefined ? externalValue : internalValue;
 
   const set = (key: string, v: unknown) => {
     const next = { ...value, [key]: v };
-    setValue(next);
-    if (onChange) onChange(next);
+    if (externalValue !== undefined) {
+      // Controlled mode - just notify parent
+      if (onChange) onChange(next);
+    } else {
+      // Uncontrolled mode - manage internal state
+      setInternalValue(next);
+      if (onChange) onChange(next);
+    }
   };
 
   useEffect(() => {
-    setValue({});
-    if (onChange) onChange({});
+    if (externalValue === undefined) {
+      setInternalValue({});
+      if (onChange) onChange({});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec]);
 
@@ -30,7 +41,7 @@ export function StructuredForm({ spec, onChange, ratings }: { spec: FormSpec; on
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{spec.name}</h1>
-              
+
             </div>
             {spec.description && <p className="text-slate-300 text-lg font-light">{spec.description}</p>}
           </div>

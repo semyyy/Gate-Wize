@@ -3,14 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { StructuredForm } from '@/components/structured-form/StructuredForm';
 import { useFormList } from '@/hooks/useFormList';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { loadForm, rateForm, type FieldRating, type RatingsResponse } from '@/lib/formApi';
 import type { FormSpec } from '@/components/structured-form/types';
 import ViewerToolbar from '@/components/forms/ViewerToolbar';
-// Using browser print for PDF export; removed jsPDF/html2canvas
+import { Dialog, DialogContent, DialogHeader, DialogClose } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import GenAiLoadingOverlay from '@/components/ai/GenAiLoadingOverlay';
 
 export default function UserPage() {
   const { forms, loading, justRefreshed } = useFormList();
+  const { loadFormData, saveFormData, clearFormData } = useFormPersistence();
   const [currentId, setCurrentId] = useState<string | undefined>(undefined);
   const [spec, setSpec] = useState<FormSpec | null>(null);
   const [value, setValue] = useState<Record<string, unknown>>({});
@@ -18,16 +21,22 @@ export default function UserPage() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [ratings, setRatings] = useState<Record<string, FieldRating>>({});
   const [ratingLoading, setRatingLoading] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!currentId && forms.length > 0) setCurrentId(forms[0].id);
   }, [forms, currentId]);
 
-  // Clear answers and ratings when switching forms
+  // Load persisted data when switching forms
   useEffect(() => {
-    setValue({});
+    if (currentId) {
+      const persisted = loadFormData(currentId);
+      setValue(persisted);
+    } else {
+      setValue({});
+    }
     setRatings({});
-  }, [currentId]);
+  }, [currentId, loadFormData]);
 
   useEffect(() => {
     (async () => {
@@ -60,19 +69,40 @@ export default function UserPage() {
     }
   };
 
+  const handleClearForm = () => {
+    if (!currentId) return;
+    setClearDialogOpen(true);
+  };
+
+  const confirmClearForm = () => {
+    if (!currentId) return;
+    clearFormData(currentId);
+    setValue({});
+    setRatings({});
+    setClearDialogOpen(false);
+  };
+
+  const handleValueChange = (newValue: Record<string, unknown>) => {
+    setValue(newValue);
+    if (currentId) {
+      saveFormData(currentId, newValue);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 gap-0 md:gap-2 p-0 md:p-4 h-[100dvh]">
       <section className="rounded-lg border p-0 flex flex-col min-h-0">
         <div className="no-print">
-        <ViewerToolbar
-          forms={forms}
-          currentId={currentId}
-          onChangeCurrent={setCurrentId}
-          loading={loading || exporting}
-          justRefreshed={justRefreshed}
-          onExportPdf={handleExportPdf}
-          onRate={handleRate}
-        />
+          <ViewerToolbar
+            forms={forms}
+            currentId={currentId}
+            onChangeCurrent={setCurrentId}
+            loading={loading || exporting}
+            justRefreshed={justRefreshed}
+            onExportPdf={handleExportPdf}
+            onRate={handleRate}
+            onClearForm={handleClearForm}
+          />
         </div>
         <div ref={containerRef} className="print-area relative px-4 py-4 flex-1 min-h-0 overflow-auto">
           {ratingLoading ? (
@@ -80,7 +110,7 @@ export default function UserPage() {
           ) : null}
           {spec ? (
             <div className="avoid-break">
-              <StructuredForm spec={spec} onChange={setValue} ratings={ratings} />
+              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings} />
             </div>
           ) : forms.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">No forms available.</div>
@@ -89,6 +119,22 @@ export default function UserPage() {
           )}
         </div>
       </section>
+      <Dialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+        <DialogContent>
+          <DialogHeader
+            title="Clear Form Data"
+            description="Are you sure you want to clear all data for this form? This action cannot be undone."
+          />
+          <div className="flex justify-end gap-2 mt-4">
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={confirmClearForm}>
+              Clear Form
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

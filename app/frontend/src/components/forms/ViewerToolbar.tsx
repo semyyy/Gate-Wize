@@ -11,6 +11,7 @@ export default function ViewerToolbar({
   justRefreshed,
   onExportPdf,
   onRate,
+  onClearForm,
 }: {
   forms: { id: string; name: string }[];
   currentId?: string;
@@ -19,6 +20,7 @@ export default function ViewerToolbar({
   justRefreshed?: boolean;
   onExportPdf?: () => void;
   onRate?: () => void;
+  onClearForm?: () => void;
 }) {
   const nameCounts = React.useMemo(() => {
     const m = new Map<string, number>();
@@ -51,7 +53,7 @@ export default function ViewerToolbar({
             ) : (
               <SelectValue placeholder="Select form" />
             )}
-            <svg className="ml-2 h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
+            <svg className="ml-2 h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
           </SelectTrigger>
           <SelectContent>
             {forms.map((f) => (
@@ -91,6 +93,15 @@ export default function ViewerToolbar({
         aria-label="Export as PDF"
       >
         Export PDF
+      </button>
+      <button
+        className="border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 rounded px-3 py-1 text-sm disabled:opacity-50 transition-colors"
+        onClick={onClearForm}
+        disabled={!currentId || loading}
+        title="Clear all form data"
+        aria-label="Clear Form"
+      >
+        Clear Form
       </button>
     </div>
   );
