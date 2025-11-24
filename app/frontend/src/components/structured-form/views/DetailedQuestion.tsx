@@ -8,7 +8,7 @@ import { rateDetailedRow, type FieldRatingResult } from '@/lib/formApi';
 import { FieldRatingView, type FieldRating } from '../ratings/FieldRating';
 
 export function DetailedQuestionView({ q, path, value, onChange, onRatingChange, ratings }: { q: DetailedQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating> }) {
-  const rows: Record<string, unknown>[] = (value[path] as Record<string, unknown>[]) ?? [];
+  const rows: Record<string, unknown>[] = Array.isArray(value[path]) ? (value[path] as Record<string, unknown>[]) : [];
   const [ratingStates, setRatingStates] = useState<Record<string, boolean>>({});
 
   const addRow = () => {

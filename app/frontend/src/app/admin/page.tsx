@@ -11,7 +11,7 @@ import { validateSpec } from '@/lib/validateSpec';
 import { Dialog, DialogContent, DialogHeader, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import InlineRename from '@/components/ui/InlineRename';
 
-const default_form: FormSpec ={
+const default_form: FormSpec = {
   "name": "Default Project Form",
   "description": "Default form template mirroring the project assessment layout",
   "sections": [
@@ -42,7 +42,7 @@ const default_form: FormSpec ={
               ]
             }
           ],
-          
+
         },
         {
           "type": "detailed",
@@ -68,7 +68,7 @@ const default_form: FormSpec ={
               ]
             }
           ],
-         
+
         }
       ]
     },
@@ -100,7 +100,7 @@ const default_form: FormSpec ={
               ]
             }
           ],
-          
+
         },
         {
           "type": "detailed",
@@ -126,7 +126,7 @@ const default_form: FormSpec ={
               ]
             }
           ],
-        
+
         }
       ]
     },
@@ -157,20 +157,20 @@ const default_form: FormSpec ={
             {
               "name": "feature",
               "description": "Feature",
-              "examples":[
+              "examples": [
                 "View Loyalty Points"
               ]
             },
             {
               "name": "description",
               "description": "Description / Detail",
-              "examples":[
+              "examples": [
                 "Display balance, points history, and usage rules."
 
               ]
             }
           ],
-          
+
         },
         {
           "type": "detailed",
@@ -179,7 +179,7 @@ const default_form: FormSpec ={
             {
               "name": "requirement",
               "description": "Non-functional requirement",
-              "examples":[
+              "examples": [
                 "Response Time < 2s",
                 "24/7 availability"
               ]
@@ -201,7 +201,7 @@ const default_form: FormSpec ={
             {
               "name": "constraint",
               "description": "Constraint",
-              "examples":[
+              "examples": [
                 "Legacy System dependency"
               ]
             },
@@ -213,7 +213,7 @@ const default_form: FormSpec ={
               ]
             }
           ],
-          
+
         }
       ]
     },
@@ -246,19 +246,19 @@ const default_form: FormSpec ={
             {
               "name": "user_type",
               "description": "User type",
-              "examples":[
+              "examples": [
                 "Store manager"
               ]
             },
             {
               "name": "role",
               "description": "Role in the solution",
-              "examples":[
+              "examples": [
                 "Validates local orders and monitors performance"
               ]
             }
           ],
-          
+
         }
       ]
     },
@@ -283,19 +283,24 @@ const default_form: FormSpec ={
             {
               "name": "application",
               "description": "Application / system",
-              "examples":[
+              "examples": [
                 "Payment Gateaway"
               ]
             },
             {
               "name": "usage",
               "description": "Integration type / usage",
-              "examples":[
+              "examples": [
                 "Process online payments and refunds"
               ]
             }
           ],
-          
+
+        },
+        {
+          "type": "image",
+          "question": "Architecture Diagram",
+          "description": "Provide a URL to the system architecture diagram or visual representation of the solution"
         }
       ]
     },
@@ -320,14 +325,14 @@ const default_form: FormSpec ={
             {
               "name": "requirement",
               "description": "Requirement",
-              "examples":[
+              "examples": [
                 "Horizontal scalability"
               ]
             },
             {
               "name": "detail",
               "description": "Detail",
-              "examples":[
+              "examples": [
                 "Support more traffic peaks during seasonal sales"
               ]
             }
@@ -390,10 +395,10 @@ export default function AdminPage() {
     if (parseErrors.length > 0 || validationErrors.length > 0) return;
     try {
       setSaveStatus('saving');
-      
+
       // include formName inside the saved spec (name key)
       const toSave = { ...(spec as any) } as any;
-      
+
       await saveForm(toSave as FormSpec);
       setFirstSavedId(spec.name);
       lastSavedRef.current = JSON.stringify(spec);
@@ -416,7 +421,7 @@ export default function AdminPage() {
     }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
-        try {
+      try {
         setSaveStatus('saving');
         const toSave = { ...spec } as any;
         await saveForm(toSave as FormSpec);
@@ -475,16 +480,61 @@ export default function AdminPage() {
               </button>
             </div>
           </div>
+          {/* Error Banner - Parse Errors */}
+          {parseErrors.length > 0 && (
+            <div className="mb-3 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+              <div className="flex items-start">
+                <svg className="h-6 w-6 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-red-800 mb-2">JSON Syntax Errors ({parseErrors.length})</h3>
+                  <p className="text-sm text-red-700 mb-3">Your JSON has syntax errors. Please fix them before saving:</p>
+                  <ul className="space-y-1">
+                    {parseErrors.map((e, i) => (
+                      <li key={i} className="text-sm text-red-700 flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{e.message}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 text-xs text-red-600 bg-red-100 p-2 rounded">
+                    💡 <strong>Tip:</strong> Check for missing commas, brackets, or quotes. Use a JSON validator if needed.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Banner - Validation Errors */}
+          {parseErrors.length === 0 && validationErrors.length > 0 && (
+            <div className="mb-3 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg">
+              <div className="flex items-start">
+                <svg className="h-6 w-6 text-amber-500 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-amber-800 mb-2">Form Specification Errors ({validationErrors.length})</h3>
+                  <p className="text-sm text-amber-700 mb-3">Your JSON is valid, but the form specification has issues:</p>
+                  <ul className="space-y-1">
+                    {validationErrors.map((e, i) => (
+                      <li key={i} className="text-sm text-amber-700 flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{e}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 text-xs text-amber-600 bg-amber-100 p-2 rounded">
+                    💡 <strong>Tip:</strong> Make sure all required fields are present and question types are valid ('simple', 'option', 'detailed', or 'image').
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mt-2 flex-1 min-h-0">
             <JsonEditor value={text} onChange={setText} errors={parseErrors} className="h-full" />
           </div>
-          {parseErrors.length > 0 && (
-            <ul className="mt-3 list-disc pl-5 text-sm text-red-600">
-              {parseErrors.map((e, i) => (
-                <li key={i}>{e.message}</li>
-              ))}
-            </ul>
-          )}
         </section>
       }
       <section className="rounded-lg border p-0 flex flex-col min-h-0">
@@ -555,12 +605,7 @@ export default function AdminPage() {
           {text.trim().length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Start by uploading JSON or using the default template.</div>
           ) : (
-            <div className="flex flex-col gap-4">
-              <StructuredForm spec={spec} />
-              {parseErrors.length > 0 || validationErrors.length > 0 ? (
-                <span className="text-sm text-red-600">Fix errors before saving.</span>
-              ) : null}
-            </div>
+            <StructuredForm spec={spec} />
           )}
         </div>
       </section>

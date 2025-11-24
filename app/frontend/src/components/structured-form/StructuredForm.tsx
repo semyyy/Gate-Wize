@@ -5,6 +5,7 @@ import type { FormSpec, Question, Section } from './types';
 import { SimpleQuestionView } from './views/SimpleQuestion';
 import { OptionQuestionView } from './views/OptionQuestion';
 import { DetailedQuestionView } from './views/DetailedQuestion';
+import { ImageQuestionView } from './views/ImageQuestion';
 import { FieldRatingView, type FieldRating } from './ratings/FieldRating';
 import type { FieldRatingResult } from '@/lib/formApi';
 
@@ -102,6 +103,7 @@ function QuestionView({ q, path, value, onChange, onRatingChange, ratings }: { q
   if (q.type === 'simple') return <SimpleQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} rating={ratings?.[path]} />;
   if (q.type === 'option') return <OptionQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
   if (q.type === 'detailed') return <DetailedQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} ratings={ratings} />;
+  if (q.type === 'image') return <ImageQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
   return null;
 }
 

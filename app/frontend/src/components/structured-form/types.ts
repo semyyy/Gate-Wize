@@ -8,7 +8,7 @@ export type Section = {
   description?: string;
   questions: Question[];
 };
-export type Question = SimpleQuestion | OptionQuestion | DetailedQuestion;
+export type Question = SimpleQuestion | OptionQuestion | DetailedQuestion | ImageQuestion;
 
 export type SimpleQuestion = {
   type: 'simple';
@@ -39,12 +39,14 @@ export type DetailedAttribute = {
   options?: string[]; // when present, the column renders a select
   examples?: string[]; // suggested values for the attribute
 } & (
-  | { options: string[]; examples?: never }
-  | { examples: string[]; options?: never }
-  | {}
-);
+    | { options: string[]; examples?: never }
+    | { examples: string[]; options?: never }
+    | {}
+  );
 
-
-
-
-
+export type ImageQuestion = {
+  type: 'image';
+  question: string;
+  description?: string;
+  url?: string; // Optional default/placeholder image URL
+};

@@ -1,6 +1,6 @@
 
 
-model: gemini-pro-latest
+model: gemini-flash-latest
 
 generation:
   temperature: 0.2
