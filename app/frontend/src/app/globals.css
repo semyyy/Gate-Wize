@@ -47,3 +47,42 @@ body { background: hsl(var(--background)); color: hsl(var(--foreground)); }
 		page-break-inside: avoid;
 	}
 }
+
+/* --- Smooth Message Transition --- */
+.validation-message {
+	max-height: 0;
+	opacity: 0;
+	overflow: hidden;
+	padding-top: 0;
+	transform: translateY(-10px);
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.validation-message.is-visible {
+	max-height: 120px;
+	opacity: 1;
+	padding-top: 0.75rem;
+	transform: translateY(0);
+}
+
+/* --- Animations --- */
+@keyframes shake {
+	0%, 100% { transform: translateX(0); }
+	15%, 45%, 75% { transform: translateX(-4px); }
+	30%, 60%, 90% { transform: translateX(4px); }
+}
+
+.shake {
+	animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+	border: 2px solid rgba(59, 130, 246, 0.1);
+	border-left-color: #3b82f6;
+	border-radius: 50%;
+	width: 1.25rem;
+	height: 1.25rem;
+	animation: spin 1s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }

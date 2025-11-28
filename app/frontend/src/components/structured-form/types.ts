@@ -23,6 +23,7 @@ export type OptionQuestion = {
   description?: string;
   options: string[];
   justification?: boolean;
+  multiple?: boolean; // Enable multiple selection
 };
 
 

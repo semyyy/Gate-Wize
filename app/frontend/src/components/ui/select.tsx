@@ -30,7 +30,7 @@ export function Select({ value, onValueChange, disabled, children }: { value: st
   }, [open]);
 
   return (
-    <div ref={rootRef} className="relative inline-block" data-select-root>
+    <div ref={rootRef} className="relative block" data-select-root>
       <Ctx.Provider value={{ open, setOpen, value, onValueChange, disabled, rootRef }}>{children}</Ctx.Provider>
     </div>
   );

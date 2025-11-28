@@ -52,6 +52,8 @@ export function StructuredForm({ spec, onChange, ratings: externalRatings, value
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec]);
 
+
+
   return (
     <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl border border-slate-200 overflow-hidden">
       <header className="bg-slate-900 text-white p-8 sm:p-10 relative overflow-hidden">

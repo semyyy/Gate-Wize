@@ -22,6 +22,7 @@ context: |
       {{examples}}
 
 guidelines: |
+  {{instrctions}}
   - Evaluate the response based on:
     - Clarity: Is the response clear and easy to understand?
     - Completeness: Does it fully address the question?

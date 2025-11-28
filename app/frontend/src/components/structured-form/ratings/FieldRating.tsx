@@ -4,69 +4,78 @@ import * as React from 'react';
 
 export type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string };
 
-export function FieldRatingView({ rating }: { rating: FieldRating }) {
-  const idx = rating.rate === 'invalid' ? 0 : rating.rate === 'partial' ? 1 : 2;
-  const colors = ['bg-rose-500', 'bg-amber-500', 'bg-emerald-500'] as const;
-  const bgColors = ['bg-rose-50', 'bg-amber-50', 'bg-emerald-50'] as const;
-  const borderColors = ['border-rose-200', 'border-amber-200', 'border-emerald-200'] as const;
-  const textColors = ['text-rose-900', 'text-amber-900', 'text-emerald-900'] as const;
+// Helper to get input styles based on rating
+export function getInputStyles(rating?: FieldRating) {
+  if (!rating) return 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500';
 
-  const targetPct = ((idx + 1) / 3) * 100;
-  const [pct, setPct] = React.useState<number>(0);
-  const initializedRef = React.useRef(false);
+  switch (rating.rate) {
+    case 'valid':
+      return 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500';
+    case 'partial':
+      return 'border-amber-500 focus:border-amber-500 focus:ring-amber-500';
+    case 'invalid':
+      return 'border-rose-500 focus:border-rose-500 focus:ring-rose-500';
+    default:
+      return 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500';
+  }
+}
+
+// Status Icon Component
+export function StatusIcon({ rating, isLoading }: { rating?: FieldRating; isLoading?: boolean }) {
+  if (isLoading) {
+    return <div className="loading-spinner" />;
+  }
+
+  if (!rating) return null;
+
+  switch (rating.rate) {
+    case 'valid':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      );
+    case 'partial':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
+        </svg>
+      );
+    case 'invalid':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+// Validation Message Component
+export function ValidationMessage({ rating, isVisible }: { rating?: FieldRating; isVisible: boolean }) {
   const [typed, setTyped] = React.useState('');
-  const [typingDone, setTypingDone] = React.useState(false);
-  const timerRef = React.useRef<number | null>(null);
 
-  // Smooth width transition on updates
   React.useEffect(() => {
-    if (!initializedRef.current) {
-      const id = requestAnimationFrame(() => {
-        setPct(targetPct);
-        initializedRef.current = true;
-      });
-      return () => cancelAnimationFrame(id);
+    if (rating?.comment) {
+      setTyped(rating.comment);
+    } else {
+      setTyped('');
     }
-    // Subsequent updates animate from previous width to new width
-    const id = requestAnimationFrame(() => setPct(targetPct));
-    return () => cancelAnimationFrame(id);
-  }, [targetPct]);
+  }, [rating]);
 
-  // Typewriter for comment
-  React.useEffect(() => {
-    // cleanup any previous typing
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    setTyped('');
-    setTypingDone(false);
-    const text = String(rating.comment ?? '');
-    let i = 0;
-    const startDelay = 100; // slight pause before typing
-    const typeNext = () => {
-      setTyped(text.slice(0, i));
-      i += 1;
-      if (i <= text.length) {
-        const step = 10 + ((i % 7) * 3); // subtle humanized pace
-        timerRef.current = window.setTimeout(typeNext, step) as unknown as number;
-      } else {
-        setTypingDone(true);
-      }
-    };
-    timerRef.current = window.setTimeout(typeNext, startDelay) as unknown as number;
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [rating.rate, rating.comment]);
+  if (!rating) return <div className="validation-message" />;
+
+  const colorClass = rating.rate === 'invalid' ? 'text-rose-600' : rating.rate === 'partial' ? 'text-amber-600' : 'text-emerald-600';
+
   return (
-    <div className="mt-2">
-      <p className={`text-sm leading-5 ${textColors[idx]} transition-colors duration-300`}>
-        <span>{typed}</span>
-        <span
-          className={`inline-block w-[1px] h-[1.1em] align-[-0.15em] ml-[2px] bg-current ${typingDone ? 'opacity-0' : 'opacity-50'} animate-pulse`}
-        />
-      </p>
+    <div className={`validation-message ${isVisible ? 'is-visible' : ''} ${colorClass} text-sm font-medium flex items-start gap-2`} aria-live="polite">
+      <span>{typed}</span>
     </div>
   );
+}
+
+// Legacy view for backward compatibility if needed, but updated to use new styles
+export function FieldRatingView({ rating }: { rating: FieldRating }) {
+  return <ValidationMessage rating={rating} isVisible={true} />;
 }
