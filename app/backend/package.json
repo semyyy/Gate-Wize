@@ -21,6 +21,7 @@
     "express": "^4.19.2",
     "js-yaml": "^4.1.0",
     "minio": "^8.0.6",
+    "puppeteer": "^24.31.0",
     "zod": "^3.23.8",
     "zod-to-json-schema": "^3.23.5"
   },

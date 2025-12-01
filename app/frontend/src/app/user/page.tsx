@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { StructuredForm } from '@/components/structured-form/StructuredForm';
 import { useFormList } from '@/hooks/useFormList';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
-import { loadForm, rateForm, type FieldRating, type RatingsResponse } from '@/lib/formApi';
+import { loadForm, rateForm, exportFormToPdf, type FieldRating, type RatingsResponse } from '@/lib/formApi';
 import type { FormSpec } from '@/components/structured-form/types';
 import ViewerToolbar from '@/components/forms/ViewerToolbar';
 import { Dialog, DialogContent, DialogHeader, DialogClose } from '@/components/ui/dialog';
@@ -17,11 +17,11 @@ export default function UserPage() {
   const [currentId, setCurrentId] = useState<string | undefined>(undefined);
   const [spec, setSpec] = useState<FormSpec | null>(null);
   const [value, setValue] = useState<Record<string, unknown>>({});
-  const [exporting, setExporting] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [ratings, setRatings] = useState<Record<string, FieldRating>>({});
   const [ratingLoading, setRatingLoading] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!currentId && forms.length > 0) setCurrentId(forms[0].id);
@@ -51,14 +51,6 @@ export default function UserPage() {
     })();
   }, [currentId]);
 
-  const handleExportPdf = async () => {
-    try {
-      setExporting(true);
-      setTimeout(() => window.print(), 50);
-    } finally {
-      setTimeout(() => setExporting(false), 300);
-    }
-  };
 
   const handleClearForm = () => {
     if (!currentId) return;
@@ -95,6 +87,20 @@ export default function UserPage() {
     }
   };
 
+  const handleExportPdf = async () => {
+    if (!spec || !currentId) return;
+
+    setExporting(true);
+    try {
+      await exportFormToPdf(spec, value);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export PDF. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
 
   return (
     <div className="grid grid-cols-1 gap-0 md:gap-2 p-0 md:p-4 h-[100dvh]">
@@ -104,10 +110,11 @@ export default function UserPage() {
             forms={forms}
             currentId={currentId}
             onChangeCurrent={setCurrentId}
-            loading={loading || exporting}
+            loading={loading}
             justRefreshed={justRefreshed}
-            onExportPdf={handleExportPdf}
             onClearForm={handleClearForm}
+            onExportPdf={handleExportPdf}
+            exporting={exporting}
           />
         </div>
         <div ref={containerRef} className="print-area relative px-4 py-4 flex-1 min-h-0 overflow-auto">
@@ -116,7 +123,7 @@ export default function UserPage() {
           ) : null}
           {spec ? (
             <div className="avoid-break">
-              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings}/>
+              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings} />
             </div>
           ) : forms.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">No forms available.</div>

@@ -4,6 +4,7 @@ import cors from 'cors';
 import formRouter from './routes/form';
 import rateSimpleFieldRouter from './routes/rate-simple-field';
 import rateDetailedRowRouter from './routes/rate-detailed-row';
+import exportPdfRouter from './routes/export-pdf';
 
 
 const app = express();
@@ -17,6 +18,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/form', formRouter);
+app.use('/api/form', exportPdfRouter);
 app.use('/api/llm', rateSimpleFieldRouter);
 app.use('/api/llm', rateDetailedRowRouter);
 

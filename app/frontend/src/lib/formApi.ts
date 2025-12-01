@@ -106,3 +106,39 @@ export async function rateDetailedRow(
     return null;
   }
 }
+
+export async function exportFormToPdf(
+  spec: FormSpec,
+  value: Record<string, unknown>
+): Promise<void> {
+  try {
+    const r = await fetch(`${API_BASE}/api/form/export-pdf`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ spec, value }),
+    });
+
+    if (!r.ok) {
+      const errorData = await r.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `Export failed: ${r.status}`);
+    }
+
+    // Get the PDF blob
+    const blob = await r.blob();
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${spec.name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (e) {
+    console.error('PDF export error:', e);
+    throw e;
+  }
+}

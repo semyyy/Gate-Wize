@@ -9,16 +9,18 @@ export default function ViewerToolbar({
   onChangeCurrent,
   loading,
   justRefreshed,
-  onExportPdf,
   onClearForm,
+  onExportPdf,
+  exporting,
 }: {
   forms: { id: string; name: string }[];
   currentId?: string;
   onChangeCurrent: (id: string | undefined) => void;
   loading: boolean;
   justRefreshed?: boolean;
-  onExportPdf?: () => void;
   onClearForm?: () => void;
+  onExportPdf?: () => void;
+  exporting?: boolean;
 }) {
   const nameCounts = React.useMemo(() => {
     const m = new Map<string, number>();
@@ -75,13 +77,25 @@ export default function ViewerToolbar({
 
       <div className="flex-1" />
       <button
-        className="border rounded px-3 py-1 text-sm disabled:opacity-50"
+        className="border border-indigo-300 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded px-3 py-1 text-sm disabled:opacity-50 transition-colors flex items-center gap-2"
         onClick={onExportPdf}
-        disabled={!currentId || loading}
-        title="Export as PDF"
-        aria-label="Export as PDF"
+        disabled={!currentId || loading || exporting}
+        title="Export form as PDF"
+        aria-label="Export PDF"
       >
-        Export PDF
+        {exporting ? (
+          <>
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-600" />
+            <span>Exporting...</span>
+          </>
+        ) : (
+          <>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Export PDF</span>
+          </>
+        )}
       </button>
       <button
         className="border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 rounded px-3 py-1 text-sm disabled:opacity-50 transition-colors"
