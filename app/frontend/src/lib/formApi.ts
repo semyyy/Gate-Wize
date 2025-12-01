@@ -68,13 +68,14 @@ export type FieldRatingResult = { comment: string; rate?: 'invalid' | 'partial' 
 export async function rateSimpleField(
   question: string,
   value: string,
-  examples?: string[]
+  examples?: string[],
+  promptConfig?: { task?: string; role?: string; guidelines?: string }
 ): Promise<FieldRatingResult | null> {
   try {
     const r = await fetch(`${API_BASE}/api/llm/rate-simple-field`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, value, examples }),
+      body: JSON.stringify({ question, value, examples, promptConfig }),
     });
     if (!r.ok) return null;
     const j = await r.json();
@@ -90,13 +91,14 @@ export async function rateDetailedRow(
   attributeName: string,
   attributeValue: string,
   rowData: Record<string, unknown>,
-  examples?: string[]
+  examples?: string[],
+  promptConfig?: { task?: string; role?: string; guidelines?: string }
 ): Promise<FieldRatingResult | null> {
   try {
     const r = await fetch(`${API_BASE}/api/llm/rate-detailed-row`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, attributeName, attributeValue, rowData, examples }),
+      body: JSON.stringify({ question, attributeName, attributeValue, rowData, examples, promptConfig }),
     });
     if (!r.ok) return null;
     const j = await r.json();

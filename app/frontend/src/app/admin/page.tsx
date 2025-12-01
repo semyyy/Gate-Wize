@@ -9,333 +9,158 @@ import { formIdFromName } from '@/lib/slug';
 import type { FormSpec } from '@/components/structured-form/types';
 import { validateSpec } from '@/lib/validateSpec';
 import { Dialog, DialogContent, DialogHeader, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import InlineRename from '@/components/ui/InlineRename';
 
 const default_form: FormSpec = {
-  "name": "Default Project Form",
-  "description": "Default form template mirroring the project assessment layout",
+  "name": "Demo Form - All Features",
+  "description": "Compact demo showcasing all question types and custom AI prompts",
   "sections": [
     {
-      "title": "Drivers & Stakeholders",
-      "description": "understand the context and reasons behind the project",
-      "questions": [
-        {
-          "type": "detailed",
-          "question": "Which problems or opportunities motivate this project?",
-          "description": "Describe current issues or the opportunities to capture.",
-          "attributes": [
-            {
-              "name": "type",
-              "description": "Type",
-              "options": [
-                "probleme",
-                "opportunite"
-              ]
-            },
-            {
-              "name": "description",
-              "description": "Description / impact",
-              "examples": [
-                "Increase in ROI",
-                "High customer churn in mobile app",
-                "Opportunity to automate manual accounting process"
-              ]
-            }
-          ],
-
-        },
-        {
-          "type": "detailed",
-          "question": "Which major stakeholders are involved?",
-          "description": "List the key roles and how they are involved.",
-          "attributes": [
-            {
-              "name": "stakeholder",
-              "description": "Stakeholder",
-              "examples": [
-                "Project Manager",
-                "Business Owner",
-                "IT Operations Manager"
-              ]
-            },
-            {
-              "name": "role",
-              "description": "Role / Detail",
-              "examples": [
-                "Oversees the whole project, assigns tasks, contacts client",
-                "Validates functional scope, ensures business alignment",
-                "Manages production deployment and ensures platform stability"
-              ]
-            }
-          ],
-
-        }
-      ]
-    },
-    {
-      "title": "Objectives and expected results (Goals & Outcomes)",
-      "description": "define the purpose and expected impact",
-      "questions": [
-        {
-          "type": "detailed",
-          "question": "Which business objectives should this project deliver?",
-          "description": "Formulate measurable objectives whenever possible.",
-          "attributes": [
-            {
-              "name": "objective",
-              "description": "Business objective",
-              "examples": [
-                "Reduce customer support workload",
-                "Increase online conversion rate",
-                "Improve product availability visibility"
-              ]
-            },
-            {
-              "name": "indicator",
-              "description": "Indicator / target",
-              "examples": [
-                "Reduce support tickets by 20% in 6 months",
-                "Increase conversion from 1.8% to 3%",
-                "95% accuracy in stock data across all channels"
-              ]
-            }
-          ],
-
-        },
-        {
-          "type": "detailed",
-          "question": "What benefits or concrete changes do you expect?",
-          "description": "Focus on results that are visible to users and the business.",
-          "attributes": [
-            {
-              "name": "benefit",
-              "description": "Benefit / change",
-              "examples": [
-                "Faster checkout process",
-                "Improved data reliability",
-                "Simplified back-office operations"
-              ]
-            },
-            {
-              "name": "detail",
-              "description": "Detail",
-              "examples": [
-                "Reduce number of steps required to validate a purchase",
-                "Automated synchronization between systems",
-                "Less manual intervention required by support teams"
-              ]
-            }
-          ],
-
-        }
-      ]
-    },
-    {
-      "title": "Strategic alignment",
-      "description": "connect the project to the company vision",
+      "title": "Project Overview",
+      "description": "Basic project information",
       "questions": [
         {
           "type": "simple",
-          "question": "How does this project contribute to the company strategy?",
-          "description": "Link it to transformation, customer experience, e-commerce, etc.",
+          "question": "What is your project name?",
+          "description": "Provide a clear, professional name",
           "examples": [
-            "Supports digital transformation roadmap by migrating legacy processes",
-            "Improves customer experience through faster omnichannel journeys",
-            "Strengthens e-commerce capabilities by modernizing checkout pipeline"
+            "Customer Portal Redesign",
+            "Inventory Management System",
+            "Mobile App Modernization"
+          ],
+          "promptConfig": {
+            "task": "Evaluate if the project name is professional, clear, and memorable.",
+            "role": "You are a project naming expert evaluating business project titles.",
+            "guidelines": "Check for: clarity (easy to understand), professionalism (appropriate for business), specificity (not too generic), and memorability. Avoid vague names like 'Project X' or overly technical jargon."
+          }
+        },
+        {
+          "type": "simple",
+          "question": "Describe the main business problem this project solves",
+          "examples": [
+            "High customer churn due to poor mobile experience",
+            "Manual inventory tracking causing stock discrepancies",
+            "Slow checkout process reducing conversion rates"
           ]
         }
       ]
     },
     {
-      "title": "Functional & non-functional requirements (Requirements & Constraints)",
-      "description": "describe what the solution must do and under which conditions",
-      "questions": [
-        {
-          "type": "detailed",
-          "question": "Which main features are expected?",
-          "attributes": [
-            {
-              "name": "feature",
-              "description": "Feature",
-              "examples": [
-                "View Loyalty Points"
-              ]
-            },
-            {
-              "name": "description",
-              "description": "Description / Detail",
-              "examples": [
-                "Display balance, points history, and usage rules."
-
-              ]
-            }
-          ],
-
-        },
-        {
-          "type": "detailed",
-          "question": "Do you have non-functional requirements to consider?",
-          "attributes": [
-            {
-              "name": "requirement",
-              "description": "Non-functional requirement",
-              "examples": [
-                "Response Time < 2s",
-                "24/7 availability"
-              ]
-            },
-            {
-              "name": "detail",
-              "description": "Detail",
-              "examples": [
-                "For critical ordering journeys",
-                "Availability rate, maintenance windows"
-              ]
-            }
-          ]
-        },
-        {
-          "type": "detailed",
-          "question": "Are there constraints to consider?",
-          "attributes": [
-            {
-              "name": "constraint",
-              "description": "Constraint",
-              "examples": [
-                "Legacy System dependency"
-              ]
-            },
-            {
-              "name": "detail",
-              "description": "Detail",
-              "examples": [
-                "Must connect to an existing ERP that cannot be modified"
-              ]
-            }
-          ],
-
-        }
-      ]
-    },
-    {
-      "title": "Solution implementation approach",
-      "description": "identify the nature of the project (make, buy, etc.)",
+      "title": "Solution Approach",
+      "description": "Define how you'll implement the solution",
       "questions": [
         {
           "type": "option",
           "question": "What type of solution are you considering?",
           "options": [
-            "make",
-            "buy",
-            "integration",
-            "rollout",
-            "autre"
+            "Build custom solution",
+            "Buy/license existing software",
+            "Integrate existing systems",
+            "Hybrid approach"
           ],
-          "justification": true,
+          "justification": true
+        },
+        {
+          "type": "option",
+          "question": "Which platforms will you support?",
+          "description": "Select all that apply",
+          "options": [
+            "Web",
+            "iOS",
+            "Android",
+            "Desktop"
+          ],
+          "multiple": true
         }
       ]
     },
     {
-      "title": "Users and roles",
-      "description": "identify the system actors",
+      "title": "Team & Stakeholders",
+      "description": "Identify key people involved",
       "questions": [
         {
           "type": "detailed",
-          "question": "Who will use the solution and what will each user do?",
+          "question": "List the key stakeholders and their roles",
           "attributes": [
             {
-              "name": "user_type",
-              "description": "User type",
+              "name": "name",
+              "description": "Stakeholder Name",
               "examples": [
-                "Store manager"
+                "Sarah Johnson",
+                "Mike Chen"
               ]
             },
             {
               "name": "role",
-              "description": "Role in the solution",
+              "description": "Role/Responsibility",
               "examples": [
-                "Validates local orders and monitors performance"
-              ]
+                "Product Owner - defines requirements",
+                "Tech Lead - oversees architecture",
+                "Business Analyst - gathers user needs"
+              ],
+              "promptConfig": {
+                "task": "Verify the role description is specific and actionable.",
+                "guidelines": "Ensure the role clearly explains what the person does in the project. Avoid vague descriptions like 'helps with project' or 'involved in development'. Look for specific responsibilities."
+              }
             }
-          ],
-
+          ]
         }
       ]
     },
     {
-      "title": "Target architecture and integrations",
-      "description": "position the solution within the IS",
+      "title": "Requirements",
+      "description": "Core features and constraints",
       "questions": [
         {
-          "type": "simple",
-          "question": "Does this solution replace an existing one?",
-          "description": "Indicate which tool or system is replaced, if any.",
-          "examples": [
-            "Replaces legacy CRM tool",
-            "Modernizes outdated reporting system",
-            "No replacement — new capability"
-          ]
-        },
-        {
           "type": "detailed",
-          "question": "Does the solution need to integrate with other applications?",
+          "question": "What are the main features or capabilities needed?",
           "attributes": [
             {
-              "name": "application",
-              "description": "Application / system",
+              "name": "feature",
+              "description": "Feature Name",
               "examples": [
-                "Payment Gateaway"
+                "User Authentication",
+                "Real-time Notifications",
+                "Data Export"
               ]
             },
             {
-              "name": "usage",
-              "description": "Integration type / usage",
+              "name": "priority",
+              "description": "Priority",
+              "options": [
+                "Must have",
+                "Should have",
+                "Nice to have"
+              ]
+            },
+            {
+              "name": "description",
+              "description": "Details",
               "examples": [
-                "Process online payments and refunds"
+                "Support login via email and social accounts",
+                "Push notifications for order updates",
+                "Export reports to PDF and Excel"
               ]
             }
-          ],
-
-        },
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Architecture",
+      "description": "Technical overview",
+      "questions": [
         {
           "type": "image",
-          "question": "Architecture Diagram",
-          "description": "Provide a URL to the system architecture diagram or visual representation of the solution"
-        }
-      ]
-    },
-    {
-      "title": "Lifecycle, governance, and scalability",
-      "description": "plan for maintenance and sustainability",
-      "questions": [
-        {
-          "type": "simple",
-          "question": "Who will handle maintenance and scalability for the solution?",
-          "description": "Specify the teams, partners, or vendors.",
-          "examples": [
-            "IT Operations team for platform maintenance",
-            "External SaaS provider handles scalability and updates",
-            "Internal development squad ensures feature lifecycle"
-          ]
+          "question": "System Architecture Diagram",
+          "description": "Upload or provide URL to your architecture diagram"
         },
         {
-          "type": "detailed",
-          "question": "Do you have portability or scalability requirements?",
-          "attributes": [
-            {
-              "name": "requirement",
-              "description": "Requirement",
-              "examples": [
-                "Horizontal scalability"
-              ]
-            },
-            {
-              "name": "detail",
-              "description": "Detail",
-              "examples": [
-                "Support more traffic peaks during seasonal sales"
-              ]
-            }
+          "type": "simple",
+          "question": "What are the main technical constraints or dependencies?",
+          "examples": [
+            "Must integrate with existing SAP system",
+            "Limited to AWS cloud infrastructure",
+            "Need to support 10,000 concurrent users"
           ]
         }
       ]

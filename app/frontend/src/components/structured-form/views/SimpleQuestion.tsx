@@ -31,7 +31,7 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
 
     console.log('[SimpleQuestion] Starting rating...');
     setIsRating(true);
-    const ratingResult = await rateSimpleField(q.question, currentValue, q.examples);
+    const ratingResult = await rateSimpleField(q.question, currentValue, q.examples, q.promptConfig);
     console.log('[SimpleQuestion] Rating result:', ratingResult);
     setIsRating(false);
 

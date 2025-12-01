@@ -1,0 +1,157 @@
+{
+  "name": "Demo Form - All Features",
+  "description": "Compact demo showcasing all question types and custom AI prompts",
+  "sections": [
+    {
+      "title": "Project Overview",
+      "description": "Basic project information",
+      "questions": [
+        {
+          "type": "simple",
+          "question": "What is your project name?",
+          "description": "Provide a clear, professional name",
+          "examples": [
+            "Customer Portal Redesign",
+            "Inventory Management System",
+            "Mobile App Modernization"
+          ],
+          "promptConfig": {
+            "task": "Evaluate if the project name is professional, clear, and memorable.",
+            "role": "You are a project naming expert evaluating business project titles.",
+            "guidelines": "Check for: clarity (easy to understand), professionalism (appropriate for business), specificity (not too generic), and memorability. Avoid vague names like 'Project X' or overly technical jargon."
+          }
+        },
+        {
+          "type": "simple",
+          "question": "Describe the main business problem this project solves",
+          "examples": [
+            "High customer churn due to poor mobile experience",
+            "Manual inventory tracking causing stock discrepancies",
+            "Slow checkout process reducing conversion rates"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Solution Approach",
+      "description": "Define how you'll implement the solution",
+      "questions": [
+        {
+          "type": "option",
+          "question": "What type of solution are you considering?",
+          "options": [
+            "Build custom solution",
+            "Buy/license existing software",
+            "Integrate existing systems",
+            "Hybrid approach"
+          ],
+          "justification": true
+        },
+        {
+          "type": "option",
+          "question": "Which platforms will you support?",
+          "description": "Select all that apply",
+          "options": [
+            "Web",
+            "iOS",
+            "Android",
+            "Desktop"
+          ],
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "title": "Team & Stakeholders",
+      "description": "Identify key people involved",
+      "questions": [
+        {
+          "type": "detailed",
+          "question": "List the key stakeholders and their roles",
+          "attributes": [
+            {
+              "name": "name",
+              "description": "Stakeholder Name",
+              "examples": [
+                "Sarah Johnson",
+                "Mike Chen"
+              ]
+            },
+            {
+              "name": "role",
+              "description": "Role/Responsibility",
+              "examples": [
+                "Product Owner - defines requirements",
+                "Tech Lead - oversees architecture",
+                "Business Analyst - gathers user needs"
+              ],
+              "promptConfig": {
+                "task": "Verify the role description is specific and actionable.",
+                "guidelines": "Ensure the role clearly explains what the person does in the project. Avoid vague descriptions like 'helps with project' or 'involved in development'. Look for specific responsibilities."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Requirements",
+      "description": "Core features and constraints",
+      "questions": [
+        {
+          "type": "detailed",
+          "question": "What are the main features or capabilities needed?",
+          "attributes": [
+            {
+              "name": "feature",
+              "description": "Feature Name",
+              "examples": [
+                "User Authentication",
+                "Real-time Notifications",
+                "Data Export"
+              ]
+            },
+            {
+              "name": "priority",
+              "description": "Priority",
+              "options": [
+                "Must have",
+                "Should have",
+                "Nice to have"
+              ]
+            },
+            {
+              "name": "description",
+              "description": "Details",
+              "examples": [
+                "Support login via email and social accounts",
+                "Push notifications for order updates",
+                "Export reports to PDF and Excel"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Architecture",
+      "description": "Technical overview",
+      "questions": [
+        {
+          "type": "image",
+          "question": "System Architecture Diagram",
+          "description": "Upload or provide URL to your architecture diagram"
+        },
+        {
+          "type": "simple",
+          "question": "What are the main technical constraints or dependencies?",
+          "examples": [
+            "Must integrate with existing SAP system",
+            "Limited to AWS cloud infrastructure",
+            "Need to support 10,000 concurrent users"
+          ]
+        }
+      ]
+    }
+  ]
+}

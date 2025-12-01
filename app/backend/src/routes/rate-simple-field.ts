@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/rate-simple-field', async (req, res) => {
     try {
-        const { question, value, examples } = req.body ?? {};
+        const { question, value, examples, promptConfig } = req.body ?? {};
 
         // Validate inputs
         if (!question || typeof question !== 'string') {
@@ -30,7 +30,7 @@ router.post('/rate-simple-field', async (req, res) => {
             question,
             value,
             examples: examplesStr,
-        });
+        }, promptConfig);
 
         const schema = buildFieldRatingSchema();
         const result = await llm.generateStructured({ prompt, schema });

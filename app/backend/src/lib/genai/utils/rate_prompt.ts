@@ -30,11 +30,12 @@ export function loadSimpleFieldRateTemplate(): FieldRateTemplate {
 
 export function composeSimpleFieldRatePrompt(
   tpl: FieldRateTemplate,
-  vars: { question: string; value: string; examples: string }
+  vars: { question: string; value: string; examples: string },
+  customPrompt?: { task?: string; role?: string; guidelines?: string }
 ): string {
   let prompt = '';
-  prompt += `Task:\n${tpl.task}\n\n`;
-  prompt += `Role:\n${tpl.role}\n\n`;
+  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
+  prompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
 
   let context = tpl.context;
   context = context.replace('{{question}}', vars.question);
@@ -42,7 +43,7 @@ export function composeSimpleFieldRatePrompt(
   context = context.replace('{{examples}}', vars.examples);
   prompt += `Context:\n${context}\n\n`;
 
-  prompt += `Guidelines:\n${tpl.guidelines}\n\n`;
+  prompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
   prompt += `Final Instruction:\n${tpl.final_instruction}\n`;
 
   return prompt;
@@ -55,11 +56,12 @@ export function loadDetailedRowRateTemplate(): FieldRateTemplate {
 
 export function composeDetailedRowRatePrompt(
   tpl: FieldRateTemplate,
-  vars: { question: string; attributeName: string; attributeValue: string; rowData: string; examples: string }
+  vars: { question: string; attributeName: string; attributeValue: string; rowData: string; examples: string },
+  customPrompt?: { task?: string; role?: string; guidelines?: string }
 ): string {
   let prompt = '';
-  prompt += `Task:\n${tpl.task}\n\n`;
-  prompt += `Role:\n${tpl.role}\n\n`;
+  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
+  prompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
 
   let context = tpl.context;
   context = context.replace('{{question}}', vars.question);
@@ -69,7 +71,7 @@ export function composeDetailedRowRatePrompt(
   context = context.replace('{{examples}}', vars.examples);
   prompt += `Context:\n${context}\n\n`;
 
-  prompt += `Guidelines:\n${tpl.guidelines}\n\n`;
+  prompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
   prompt += `Final Instruction:\n${tpl.final_instruction}\n`;
 
   return prompt;

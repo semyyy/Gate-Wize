@@ -3,18 +3,27 @@ export type FormSpec = {
   description?: string;
   sections: Section[];
 };
+
 export type Section = {
   title: string;
   description?: string;
   questions: Question[];
 };
+
 export type Question = SimpleQuestion | OptionQuestion | DetailedQuestion | ImageQuestion;
+
+export type PromptConfig = {
+  task?: string;
+  role?: string;
+  guidelines?: string;
+};
 
 export type SimpleQuestion = {
   type: 'simple';
   question: string;
   description?: string;
   examples?: string[];
+  promptConfig?: PromptConfig;
 };
 
 export type OptionQuestion = {
@@ -34,11 +43,13 @@ export type DetailedQuestion = {
   description?: string;
   attributes: DetailedAttribute[]; // columns of a table
 };
+
 export type DetailedAttribute = {
   name: string; // "nom"
   description?: string;
   options?: string[]; // when present, the column renders a select
   examples?: string[]; // suggested values for the attribute
+  promptConfig?: PromptConfig;
 } & (
     | { options: string[]; examples?: never }
     | { examples: string[]; options?: never }

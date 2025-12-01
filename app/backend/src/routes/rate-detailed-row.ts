@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/rate-detailed-row', async (req, res) => {
     try {
-        const { question, attributeName, attributeValue, rowData, examples } = req.body ?? {};
+        const { question, attributeName, attributeValue, rowData, examples, promptConfig } = req.body ?? {};
 
         // Validate inputs
         if (!question || typeof question !== 'string') {
@@ -44,7 +44,7 @@ router.post('/rate-detailed-row', async (req, res) => {
             attributeValue,
             rowData: rowDataStr,
             examples: examplesStr,
-        });
+        }, promptConfig);
 
         const schema = buildFieldRatingSchema();
         const result = await llm.generateStructured({ prompt, schema });

@@ -39,16 +39,16 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
 
-  const queueRef = useRef<Record<number, Array<{ attrName: string, attrDescription?: string, examples?: string[] }>>>({});
+  const queueRef = useRef<Record<number, Array<{ attrName: string, attrDescription?: string, examples?: string[], promptConfig?: { task?: string; role?: string; guidelines?: string } }>>>({});
 
   const processNext = (ri: number) => {
     const next = queueRef.current[ri]?.shift();
     if (next) {
-      validateAttribute(ri, next.attrName, next.attrDescription, next.examples);
+      validateAttribute(ri, next.attrName, next.attrDescription, next.examples, next.promptConfig);
     }
   };
 
-  const validateAttribute = async (ri: number, attrName: string, attrDescription?: string, examples?: string[]) => {
+  const validateAttribute = async (ri: number, attrName: string, attrDescription?: string, examples?: string[], promptConfig?: { task?: string; role?: string; guidelines?: string }) => {
     const rows = rowsRef.current;
     const currentValue = (rows[ri]?.[attrName] as string) ?? '';
 
@@ -68,7 +68,8 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
         attrDescription || attrName,
         currentValue,
         currentRow,
-        examples
+        examples,
+        promptConfig
       );
 
       if (rating) {
@@ -80,7 +81,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
     }
   };
 
-  const handleAttributeBlur = (ri: number, attrName: string, attrDescription?: string, examples?: string[]) => {
+  const handleAttributeBlur = (ri: number, attrName: string, attrDescription?: string, examples?: string[], promptConfig?: { task?: string; role?: string; guidelines?: string }) => {
     const rows = rowsRef.current;
     const currentValue = (rows[ri]?.[attrName] as string) ?? '';
     if (!currentValue.trim() || !onRatingChange) return;
@@ -90,11 +91,11 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
 
     if (isRowValidating) {
       if (!queueRef.current[ri]) queueRef.current[ri] = [];
-      queueRef.current[ri].push({ attrName, attrDescription, examples });
+      queueRef.current[ri].push({ attrName, attrDescription, examples, promptConfig });
       return;
     }
 
-    validateAttribute(ri, attrName, attrDescription, examples);
+    validateAttribute(ri, attrName, attrDescription, examples, promptConfig);
   };
 
   return (
@@ -167,7 +168,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                                 placeholder={a.examples && a.examples.length > 0 ? `e.g. ${a.examples.join(', ')}` : undefined}
                                 value={(row[a.name] as string) ?? ''}
                                 onChange={(e) => update(ri, a.name, e.target.value)}
-                                onBlur={() => handleAttributeBlur(ri, a.name, a.description, a.examples)}
+                                onBlur={() => handleAttributeBlur(ri, a.name, a.description, a.examples, a.promptConfig)}
                               />
 
                               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
