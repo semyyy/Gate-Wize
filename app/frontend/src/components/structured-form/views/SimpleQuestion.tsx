@@ -58,7 +58,7 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
         />
 
         <div className="absolute right-3 top-3 flex items-center justify-center pointer-events-none">
-          <StatusIcon rating={rating} isLoading={isRating} />
+          <StatusIcon isLoading={isRating} />
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DetailedQuestion } from '../types';
 import { rateDetailedRow, type FieldRatingResult } from '@/lib/formApi';
@@ -116,6 +117,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                   key={a.name}
                   className="text-left border-b border-slate-200 p-2 text-xs uppercase tracking-wide text-slate-500 font-semibold"
                   title={a.description}
+                  style={a.width ? { width: `${a.width * 100}%` } : undefined}
                 >
                   {a.name}
                 </th>
@@ -163,16 +165,26 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                             </Select>
                           ) : (
                             <div className="relative">
-                              <Input
-                                className={`w-full h-12 rounded-md border px-3 text-base shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(currentRating)}`}
-                                placeholder={a.examples && a.examples.length > 0 ? `e.g. ${a.examples.join(', ')}` : undefined}
-                                value={(row[a.name] as string) ?? ''}
-                                onChange={(e) => update(ri, a.name, e.target.value)}
-                                onBlur={() => handleAttributeBlur(ri, a.name, a.description, a.examples, a.promptConfig)}
-                              />
+                              {a.inputType === 'textarea' ? (
+                                <Textarea
+                                  className={`w-full min-h-[80px] rounded-md border px-3 py-2 text-base shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(currentRating)}`}
+                                  placeholder={a.examples && a.examples.length > 0 ? `e.g. ${a.examples.join(', ')}` : undefined}
+                                  value={(row[a.name] as string) ?? ''}
+                                  onChange={(e) => update(ri, a.name, e.target.value)}
+                                  onBlur={() => handleAttributeBlur(ri, a.name, a.description, a.examples, a.promptConfig)}
+                                />
+                              ) : (
+                                <Input
+                                  className={`w-full h-12 rounded-md border px-3 text-base shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(currentRating)}`}
+                                  placeholder={a.examples && a.examples.length > 0 ? `e.g. ${a.examples.join(', ')}` : undefined}
+                                  value={(row[a.name] as string) ?? ''}
+                                  onChange={(e) => update(ri, a.name, e.target.value)}
+                                  onBlur={() => handleAttributeBlur(ri, a.name, a.description, a.examples, a.promptConfig)}
+                                />
+                              )}
 
                               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-                                <StatusIcon rating={currentRating} isLoading={isRating} />
+                                <StatusIcon isLoading={isRating} />
                               </div>
                             </div>
                           )}

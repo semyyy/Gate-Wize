@@ -84,6 +84,7 @@ const default_form: FormSpec = {
             {
               "name": "name",
               "description": "Stakeholder Name",
+              "width": 0.25,
               "examples": [
                 "Sarah Johnson",
                 "Mike Chen"
@@ -117,6 +118,7 @@ const default_form: FormSpec = {
             {
               "name": "feature",
               "description": "Feature Name",
+              "width": 0.4,
               "examples": [
                 "User Authentication",
                 "Real-time Notifications",
@@ -126,6 +128,7 @@ const default_form: FormSpec = {
             {
               "name": "priority",
               "description": "Priority",
+              "width": 0.15,
               "options": [
                 "Must have",
                 "Should have",
@@ -135,6 +138,8 @@ const default_form: FormSpec = {
             {
               "name": "description",
               "description": "Details",
+              "width": 0.45,
+              "inputType": "textarea",
               "examples": [
                 "Support login via email and social accounts",
                 "Push notifications for order updates",

@@ -50,6 +50,8 @@ export type DetailedAttribute = {
   options?: string[]; // when present, the column renders a select
   examples?: string[]; // suggested values for the attribute
   promptConfig?: PromptConfig;
+  width?: number; // optional width as decimal (e.g., 0.3 for 30% width)
+  inputType?: 'input' | 'textarea'; // optional input type (default: 'input')
 } & (
     | { options: string[]; examples?: never }
     | { examples: string[]; options?: never }

@@ -52,6 +52,14 @@ export function StructuredForm({ spec, onChange, ratings: externalRatings, value
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec]);
 
+  // Clear internal ratings when external value is cleared
+  useEffect(() => {
+    if (externalValue !== undefined && Object.keys(externalValue).length === 0) {
+      setInternalRatings({});
+    }
+  }, [externalValue]);
+
+
 
 
   return (

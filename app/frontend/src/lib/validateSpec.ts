@@ -17,6 +17,18 @@ export function validateSpec(obj: any): string[] {
         if (!q.question || typeof q.question !== 'string') errs.push(`sections[${si}].questions[${qi}].question is required (string).`);
         if (q.type === 'option' && !Array.isArray(q.options)) errs.push(`sections[${si}].questions[${qi}].options must be an array.`);
         if (q.type === 'detailed' && !Array.isArray(q.attributes)) errs.push(`sections[${si}].questions[${qi}].attributes must be an array.`);
+        if (q.type === 'detailed' && Array.isArray(q.attributes)) {
+          q.attributes.forEach((attr: any, ai: number) => {
+            if (!attr || typeof attr !== 'object') return errs.push(`sections[${si}].questions[${qi}].attributes[${ai}] must be an object.`);
+            if (!attr.name || typeof attr.name !== 'string') errs.push(`sections[${si}].questions[${qi}].attributes[${ai}].name is required (string).`);
+            if (attr.width !== undefined && (typeof attr.width !== 'number' || attr.width <= 0 || attr.width > 1)) {
+              errs.push(`sections[${si}].questions[${qi}].attributes[${ai}].width must be a number between 0 and 1 (e.g., 0.3 for 30%).`);
+            }
+            if (attr.inputType !== undefined && !['input', 'textarea'].includes(attr.inputType)) {
+              errs.push(`sections[${si}].questions[${qi}].attributes[${ai}].inputType must be 'input' or 'textarea'.`);
+            }
+          });
+        }
       });
     });
   }

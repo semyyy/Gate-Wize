@@ -1,8 +1,109 @@
 import puppeteer from 'puppeteer';
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import { fileURLToPath } from 'node:url';
 
 export interface ExportPdfRequest {
   spec: FormSpec;
   value: Record<string, unknown>;
+}
+
+// PDF Design Configuration Types
+interface PdfDesignConfig {
+  colors: {
+    primary: string;
+    accent: string;
+    text: {
+      heading: string;
+      subheading: string;
+      body: string;
+      muted: string;
+      light: string;
+    };
+    background: {
+      page: string;
+      answer: string;
+      justification: string;
+      tableRowEven: string;
+      tableRowOdd: string;
+    };
+    border: {
+      primary: string;
+      secondary: string;
+      answer: string;
+      justification: string;
+      table: string;
+    };
+    table: {
+      headerBackground: string;
+      headerText: string;
+      headerBorder: string;
+    };
+  };
+  typography: {
+    fontFamily: string;
+    fontSize: {
+      h1: string;
+      h2: string;
+      h3: string;
+      body: string;
+      description: string;
+      small: string;
+    };
+    fontWeight: {
+      light: number;
+      normal: number;
+      medium: number;
+      semibold: number;
+      bold: number;
+    };
+    lineHeight: {
+      normal: number;
+      tight: number;
+      relaxed: number;
+    };
+  };
+  spacing: {
+    padding: {
+      page: string;
+      answer: string;
+      justification: string;
+      tableCell: string;
+      tableHeader: string;
+    };
+    margin: {
+      headerBottom: string;
+      sectionBottom: string;
+      questionBottom: string;
+      elementSmall: string;
+      elementMedium: string;
+      elementLarge: string;
+    };
+    borderWidth: {
+      thin: string;
+      medium: string;
+      thick: string;
+    };
+  };
+  layout: {
+    borderRadius: {
+      small: string;
+      medium: string;
+    };
+    shadow: {
+      small: string;
+    };
+    pdf: {
+      format: string;
+      margin: {
+        top: string;
+        right: string;
+        bottom: string;
+        left: string;
+      };
+    };
+  };
 }
 
 // Type definitions for form structure
@@ -56,6 +157,25 @@ type ImageQuestion = {
   description?: string;
   url?: string;
 };
+
+/**
+ * Load PDF design configuration from YAML file
+ */
+function loadPdfDesignConfig(): PdfDesignConfig {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const baseDir = path.dirname(__filename); // .../pdf
+    const configPath = path.join(baseDir, 'pdf-design.yaml');
+    const altPath = path.join(process.cwd(), 'src', 'lib', 'pdf', 'pdf-design.yaml');
+    const filePath = fs.existsSync(configPath) ? configPath : altPath;
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    return yaml.load(raw) as PdfDesignConfig;
+  } catch (error) {
+    console.error('Failed to load PDF design config, using defaults:', error);
+    // Return default configuration as fallback
+    throw new Error('PDF design configuration file not found');
+  }
+}
 
 /**
  * Escape HTML special characters to prevent XSS and rendering issues
@@ -224,6 +344,7 @@ function renderSection(section: Section, sectionIndex: number, value: Record<str
  */
 function generateHtml(req: ExportPdfRequest): string {
   const { spec, value } = req;
+  const config = loadPdfDesignConfig();
 
   const sectionsHtml = spec.sections.map((section, si) => renderSection(section, si, value)).join('');
 
@@ -242,132 +363,132 @@ function generateHtml(req: ExportPdfRequest): string {
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      font-size: 11pt;
-      line-height: 1.6;
-      color: #1e293b;
-      background: white;
-      padding: 40px;
+      font-family: ${config.typography.fontFamily};
+      font-size: ${config.typography.fontSize.body};
+      line-height: ${config.typography.lineHeight.normal};
+      color: ${config.colors.text.body};
+      background: ${config.colors.background.page};
+      padding: ${config.spacing.padding.page};
     }
 
     .header {
-      margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 3px solid #4f46e5;
+      margin-bottom: ${config.spacing.margin.headerBottom};
+      padding-bottom: ${config.spacing.margin.elementLarge};
+      border-bottom: ${config.spacing.borderWidth.thick} solid ${config.colors.border.primary};
     }
 
     .header h1 {
-      font-size: 28pt;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 8px;
+      font-size: ${config.typography.fontSize.h1};
+      font-weight: ${config.typography.fontWeight.bold};
+      color: ${config.colors.text.heading};
+      margin-bottom: ${config.spacing.margin.elementSmall};
     }
 
     .header .description {
-      font-size: 12pt;
-      color: #64748b;
-      font-weight: 300;
+      font-size: ${config.typography.fontSize.description};
+      color: ${config.colors.text.muted};
+      font-weight: ${config.typography.fontWeight.light};
     }
 
     .section {
-      margin-bottom: 40px;
+      margin-bottom: ${config.spacing.margin.sectionBottom};
       page-break-inside: avoid;
     }
 
     .section h2 {
-      font-size: 18pt;
-      font-weight: 600;
-      color: #4f46e5;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid #e2e8f0;
+      font-size: ${config.typography.fontSize.h2};
+      font-weight: ${config.typography.fontWeight.semibold};
+      color: ${config.colors.text.heading};
+      margin-bottom: ${config.spacing.margin.elementMedium};
+      padding-bottom: ${config.spacing.margin.elementSmall};
+      border-bottom: ${config.spacing.borderWidth.medium} solid ${config.colors.border.secondary};
     }
 
     .section-description {
-      font-size: 10pt;
-      color: #64748b;
-      margin-bottom: 20px;
+      font-size: ${config.typography.fontSize.description};
+      color: ${config.colors.text.muted};
+      margin-bottom: ${config.spacing.margin.elementLarge};
       font-style: italic;
     }
 
     .question {
-      margin-bottom: 24px;
+      margin-bottom: ${config.spacing.margin.questionBottom};
       page-break-inside: avoid;
     }
 
     .question h3 {
-      font-size: 12pt;
-      font-weight: 600;
-      color: #334155;
-      margin-bottom: 8px;
+      font-size: ${config.typography.fontSize.h3};
+      font-weight: ${config.typography.fontWeight.semibold};
+      color: ${config.colors.text.heading};
+      margin-bottom: ${config.spacing.margin.elementSmall};
     }
 
     .question .description {
-      font-size: 9pt;
-      color: #64748b;
-      margin-bottom: 8px;
+      font-size: ${config.typography.fontSize.small};
+      color: ${config.colors.text.muted};
+      margin-bottom: ${config.spacing.margin.elementSmall};
       font-style: italic;
     }
 
     .answer {
-      background: #f8fafc;
-      border-left: 3px solid #cbd5e1;
-      padding: 12px 16px;
-      font-size: 10pt;
-      color: #334155;
-      border-radius: 4px;
+      background: ${config.colors.background.answer};
+      border-left: ${config.spacing.borderWidth.thick} solid ${config.colors.border.answer};
+      padding: ${config.spacing.padding.answer};
+      font-size: ${config.typography.fontSize.description};
+      color: ${config.colors.text.body};
+      border-radius: ${config.layout.borderRadius.small};
     }
 
     .answer em {
-      color: #94a3b8;
+      color: ${config.colors.text.light};
     }
 
     .justification {
-      margin-top: 8px;
-      padding: 10px 14px;
-      background: #fef3c7;
-      border-left: 3px solid #fbbf24;
-      font-size: 9pt;
-      border-radius: 4px;
+      margin-top: ${config.spacing.margin.elementSmall};
+      padding: ${config.spacing.padding.justification};
+      background: ${config.colors.background.justification};
+      border-left: ${config.spacing.borderWidth.thick} solid ${config.colors.border.justification};
+      font-size: ${config.typography.fontSize.small};
+      border-radius: ${config.layout.borderRadius.small};
     }
 
     .data-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 12px;
-      font-size: 9pt;
+      margin-top: ${config.spacing.margin.elementMedium};
+      font-size: ${config.typography.fontSize.small};
     }
 
     .data-table th {
-      background: #4f46e5;
-      color: white;
-      padding: 10px 12px;
+      background: ${config.colors.table.headerBackground};
+      color: ${config.colors.table.headerText};
+      padding: ${config.spacing.padding.tableHeader};
       text-align: left;
-      font-weight: 600;
-      border: 1px solid #4338ca;
+      font-weight: ${config.typography.fontWeight.semibold};
+      border: ${config.spacing.borderWidth.thin} solid ${config.colors.table.headerBorder};
     }
 
     .data-table td {
-      padding: 8px 12px;
-      border: 1px solid #e2e8f0;
-      background: white;
+      padding: ${config.spacing.padding.tableCell};
+      border: ${config.spacing.borderWidth.thin} solid ${config.colors.border.table};
+      background: ${config.colors.background.tableRowOdd};
     }
 
     .data-table tr:nth-child(even) td {
-      background: #f8fafc;
+      background: ${config.colors.background.tableRowEven};
     }
 
     .image-container {
-      margin-top: 12px;
+      margin-top: ${config.spacing.margin.elementMedium};
       text-align: center;
     }
 
     .image-container img {
       max-width: 100%;
       max-height: 400px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: ${config.spacing.borderWidth.thin} solid ${config.colors.border.secondary};
+      border-radius: ${config.layout.borderRadius.medium};
+      box-shadow: ${config.layout.shadow.small};
     }
 
     @media print {
@@ -394,6 +515,7 @@ function generateHtml(req: ExportPdfRequest): string {
  */
 export async function generatePdf(req: ExportPdfRequest): Promise<Buffer> {
   const html = generateHtml(req);
+  const config = loadPdfDesignConfig();
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -405,13 +527,13 @@ export async function generatePdf(req: ExportPdfRequest): Promise<Buffer> {
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
     const pdfBuffer = await page.pdf({
-      format: 'A4',
+      format: config.layout.pdf.format as any,
       printBackground: true,
       margin: {
-        top: '20mm',
-        right: '15mm',
-        bottom: '20mm',
-        left: '15mm',
+        top: config.layout.pdf.margin.top,
+        right: config.layout.pdf.margin.right,
+        bottom: config.layout.pdf.margin.bottom,
+        left: config.layout.pdf.margin.left,
       },
     });
 

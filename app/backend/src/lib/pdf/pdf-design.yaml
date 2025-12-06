@@ -1,0 +1,111 @@
+# PDF Design Configuration
+# This file controls all design aspects of the generated PDFs
+
+# Color Configuration
+colors:
+  # Brand & Accent Colors
+  primary: "#4f46e5"        # Primary brand color (indigo)
+  accent: "#000000"         # Accent color (black)
+  
+  # Text Colors
+  text:
+    heading: "#000000"      # Main headings (black)
+    subheading: "#1e293b"   # Section headings (dark slate)
+    body: "#334155"         # Body text (slate)
+    muted: "#64748b"        # Muted/secondary text (slate gray)
+    light: "#94a3b8"        # Light text for placeholders
+  
+  # Background Colors
+  background:
+    page: "#ffffff"         # Page background (white)
+    answer: "#f8fafc"       # Answer boxes background (very light slate)
+    justification: "#fef3c7" # Justification background (amber)
+    tableRowEven: "#f8fafc" # Even table rows (very light slate)
+    tableRowOdd: "#ffffff"  # Odd table rows (white)
+  
+  # Border Colors
+  border:
+    primary: "#000000"      # Primary borders (indigo)
+    secondary: "#e2e8f0"    # Secondary borders (light slate)
+    answer: "#cbd5e1"       # Answer box borders (slate)
+    justification: "#fbbf24" # Justification borders (amber)
+    table: "#e2e8f0"        # Table cell borders (light slate)
+  
+  # Table Specific Colors
+  table:
+    headerBackground: "#6b7280"  # Modern gray for table headers
+    headerText: "#ffffff"        # White text on gray headers
+    headerBorder: "#4b5563"      # Darker gray for header borders
+
+# Typography Configuration
+typography:
+  # Font Families
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+  
+  # Font Sizes (in pt)
+  fontSize:
+    h1: "28pt"              # Main title
+    h2: "18pt"              # Section headings
+    h3: "12pt"              # Question headings
+    body: "11pt"            # Body text
+    description: "10pt"     # Descriptions
+    small: "9pt"            # Small text (tables, justifications)
+  
+  # Font Weights
+  fontWeight:
+    light: 300
+    normal: 400
+    medium: 500
+    semibold: 600
+    bold: 700
+  
+  # Line Heights
+  lineHeight:
+    normal: 1.6
+    tight: 1.4
+    relaxed: 1.8
+
+# Spacing Configuration
+spacing:
+  # Padding (in px)
+  padding:
+    page: "40px"            # Page padding
+    answer: "12px 16px"     # Answer box padding
+    justification: "10px 14px" # Justification padding
+    tableCell: "8px 12px"   # Table cell padding
+    tableHeader: "10px 12px" # Table header padding
+  
+  # Margins (in px)
+  margin:
+    headerBottom: "40px"    # Space below header
+    sectionBottom: "40px"   # Space below sections
+    questionBottom: "24px"  # Space below questions
+    elementSmall: "8px"     # Small element spacing
+    elementMedium: "12px"   # Medium element spacing
+    elementLarge: "20px"    # Large element spacing
+  
+  # Border Widths (in px)
+  borderWidth:
+    thin: "1px"
+    medium: "2px"
+    thick: "3px"
+
+# Layout Configuration
+layout:
+  # Border Radius (in px)
+  borderRadius:
+    small: "4px"
+    medium: "8px"
+  
+  # Shadows
+  shadow:
+    small: "0 2px 8px rgba(0, 0, 0, 0.1)"
+  
+  # PDF Page Settings
+  pdf:
+    format: "A4"
+    margin:
+      top: "20mm"
+      right: "15mm"
+      bottom: "20mm"
+      left: "15mm"
