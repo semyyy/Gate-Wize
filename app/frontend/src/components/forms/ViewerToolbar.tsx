@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from 'react';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function ViewerToolbar({
   forms,
@@ -46,24 +46,34 @@ export default function ViewerToolbar({
   return (
     <div className="sticky top-0 z-10 bg-white border-b py-2 px-1 flex items-center gap-3">
       {forms.length > 0 ? (
-        <Select value={currentId} onValueChange={onChangeCurrent} disabled={loading}>
-          <SelectTrigger className="border rounded px-2 py-1 min-w-56 flex items-center justify-between">
-            {selectedLabel ? (
-              <span className="truncate text-sm text-gray-800">{selectedLabel}</span>
-            ) : (
-              <SelectValue placeholder="Select form" />
-            )}
-            <svg className="ml-2 h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-          </SelectTrigger>
-          <SelectContent>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="border border-gray-300 rounded px-3 py-2 min-w-56 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={loading}>
+              <span className="truncate text-sm text-gray-800">
+                {selectedLabel || 'Select form'}
+              </span>
+              <svg className="ml-2 h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="min-w-56">
             {forms.map((f) => (
-              <SelectItem key={f.id} value={f.id}>{labelFor(f)}</SelectItem>
+              <DropdownMenuItem
+                key={f.id}
+                onClick={() => onChangeCurrent(f.id)}
+                className="cursor-pointer"
+              >
+                {labelFor(f)}
+              </DropdownMenuItem>
             ))}
             {!forms.some(f => f.id === currentId) && currentId ? (
-              <SelectItem value={currentId}>{currentId}</SelectItem>
+              <DropdownMenuItem onClick={() => onChangeCurrent(currentId)} className="cursor-pointer">
+                {currentId}
+              </DropdownMenuItem>
             ) : null}
-          </SelectContent>
-        </Select>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : null}
 
       {loading ? (

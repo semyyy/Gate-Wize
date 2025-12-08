@@ -102,6 +102,11 @@ export default function UserPage() {
   };
 
 
+  const handleFormChange = (id: string | undefined) => {
+    setSpec(null);
+    setCurrentId(id);
+  };
+
   return (
     <div className="grid grid-cols-1 gap-0 md:gap-2 p-0 md:p-4 h-[100dvh]">
       <section className="rounded-lg border p-0 flex flex-col min-h-0">
@@ -109,7 +114,7 @@ export default function UserPage() {
           <ViewerToolbar
             forms={forms}
             currentId={currentId}
-            onChangeCurrent={setCurrentId}
+            onChangeCurrent={handleFormChange}
             loading={loading}
             justRefreshed={justRefreshed}
             onClearForm={handleClearForm}

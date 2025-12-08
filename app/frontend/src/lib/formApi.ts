@@ -2,16 +2,19 @@ import type { FormSpec } from '@/components/structured-form/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:4000';
 
-export type FormListItem = { id: string; name: string };
+export type FormListItem = { id: string; name: string; status?: string };
 
-export async function listForms(): Promise<FormListItem[]> {
-  const r = await fetch(`${API_BASE}/api/form/list`);
+export async function listForms(includeUnpublished = false): Promise<FormListItem[]> {
+  const url = includeUnpublished
+    ? `${API_BASE}/api/form/list?includeUnpublished=true`
+    : `${API_BASE}/api/form/list`;
+  const r = await fetch(url, { cache: 'no-store' });
   const j = await r.json();
   return j?.ok ? (j.data ?? []) : [];
 }
 
 export async function loadForm(id: string): Promise<FormSpec | null> {
-  const r = await fetch(`${API_BASE}/api/form/load/${encodeURIComponent(id)}`);
+  const r = await fetch(`${API_BASE}/api/form/load/${encodeURIComponent(id)}`, { cache: 'no-store' });
   if (!r.ok) return null;
   const j = await r.json();
   const data = j && typeof j === 'object' && 'data' in j ? j.data : j;

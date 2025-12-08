@@ -24,7 +24,7 @@ export async function formExists(id: string) {
   return existing != null;
 }
 
-export async function listForms() {
+export async function listForms(includeUnpublished = false) {
   await ensureBucket();
   const prefix = 'form/';
   const ids: string[] = [];
@@ -41,13 +41,20 @@ export async function listForms() {
     stream.on('end', () => resolve());
     stream.on('error', (e: any) => reject(e));
   });
-  // Attach names by reading objects (small scale acceptable)
-  const meta = [] as Array<{ id: string; name: string }>;
+  // Attach names and status by reading objects (small scale acceptable)
+  const meta = [] as Array<{ id: string; name: string; status?: string }>;
   for (const id of ids) {
     try {
       const obj = await loadForm(id);
       const name = obj?.name && typeof obj.name === 'string' ? obj.name : id;
-      meta.push({ id, name });
+      const status = obj?.status && typeof obj.status === 'string' ? obj.status : undefined;
+
+      // Filter out unpublished forms unless explicitly requested
+      if (!includeUnpublished && status !== 'published') {
+        continue;
+      }
+
+      meta.push({ id, name, status });
     } catch {
       meta.push({ id, name: id });
     }

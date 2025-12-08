@@ -9,31 +9,35 @@ import { rateDetailedRow, type FieldRatingResult } from '@/lib/formApi';
 import { getInputStyles, StatusIcon, ValidationMessage, type FieldRating } from '../ratings/FieldRating';
 
 export function DetailedQuestionView({ q, path, value, onChange, onRatingChange, ratings }: { q: DetailedQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating> }) {
-  const rows: Record<string, unknown>[] = Array.isArray(value[path]) ? (value[path] as Record<string, unknown>[]) : [];
-  const [ratingStates, setRatingStates] = useState<Record<string, boolean>>({});
+  const realRows: Record<string, unknown>[] = Array.isArray(value[path]) ? (value[path] as Record<string, unknown>[]) : [];
 
-  // Ensure at least one row exists
-  useEffect(() => {
-    if (rows.length === 0) {
-      const empty: Record<string, unknown> = {};
-      for (const attr of q.attributes) empty[attr.name] = '';
-      onChange([empty]);
-    }
-  }, [rows.length, q.attributes, onChange]);
-
-  const addRow = () => {
+  const createEmptyRow = () => {
     const empty: Record<string, unknown> = {};
     for (const attr of q.attributes) empty[attr.name] = '';
-    onChange([...rows, empty]);
+    return empty;
+  };
+
+  // If no real rows, show one ghost row for UI, but don't save it yet
+  const rows = realRows.length > 0 ? realRows : [createEmptyRow()];
+
+  const [ratingStates, setRatingStates] = useState<Record<string, boolean>>({});
+  const lastEvaluatedValuesRef = useRef<Record<string, string>>({});
+
+  const addRow = () => {
+    const copy = realRows.length > 0 ? [...realRows] : [createEmptyRow()];
+    copy.push(createEmptyRow());
+    onChange(copy);
   };
   const update = (ri: number, key: string, v: unknown) => {
-    const copy = rows.slice();
+    const copy = realRows.length > 0 ? [...realRows] : [createEmptyRow()];
     copy[ri] = { ...copy[ri], [key]: v };
     onChange(copy);
   };
 
   const removeRow = (ri: number) => {
-    const copy = rows.slice();
+    // Cannot remove the ghost row
+    if (realRows.length === 0) return;
+    const copy = [...realRows];
     copy.splice(ri, 1);
     onChange(copy);
   };
@@ -41,6 +45,16 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
   rowsRef.current = rows;
 
   const queueRef = useRef<Record<number, Array<{ attrName: string, attrDescription?: string, examples?: string[], promptConfig?: { task?: string; role?: string; guidelines?: string } }>>>({});
+
+  const getPlaceholder = (examples?: string[]) => {
+    if (!examples || examples.length === 0) return undefined;
+    const text = examples
+      .filter(ex => ex != null)
+      .map(ex => typeof ex === 'string' ? ex : String(ex))
+      .filter(ex => ex.trim() !== '' && ex !== '[object Object]')
+      .join(', ');
+    return text ? `e.g. ${text}` : undefined;
+  };
 
   const processNext = (ri: number) => {
     const next = queueRef.current[ri]?.shift();
@@ -74,6 +88,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
       );
 
       if (rating) {
+        lastEvaluatedValuesRef.current[ratingKey] = currentValue;
         onRatingChange(ratingKey, rating);
       }
     } finally {
@@ -86,6 +101,13 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
     const rows = rowsRef.current;
     const currentValue = (rows[ri]?.[attrName] as string) ?? '';
     if (!currentValue.trim() || !onRatingChange) return;
+
+    const ratingKey = `${path}.${ri}.${attrName}`;
+
+    // Skip if value hasn't changed since last evaluation
+    if (currentValue === lastEvaluatedValuesRef.current[ratingKey]) {
+      return;
+    }
 
     const rowPrefix = `${path}.${ri}.`;
     const isRowValidating = Object.keys(ratingStates).some(k => k.startsWith(rowPrefix) && ratingStates[k]);
@@ -168,7 +190,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                               {a.inputType === 'textarea' ? (
                                 <Textarea
                                   className={`w-full min-h-[80px] rounded-md border px-3 py-2 text-base shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(currentRating)}`}
-                                  placeholder={a.examples && a.examples.length > 0 ? `e.g. ${a.examples.join(', ')}` : undefined}
+                                  placeholder={getPlaceholder(a.examples)}
                                   value={(row[a.name] as string) ?? ''}
                                   onChange={(e) => update(ri, a.name, e.target.value)}
                                   onBlur={() => handleAttributeBlur(ri, a.name, a.description, a.examples, a.promptConfig)}
@@ -176,7 +198,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                               ) : (
                                 <Input
                                   className={`w-full h-12 rounded-md border px-3 text-base shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(currentRating)}`}
-                                  placeholder={a.examples && a.examples.length > 0 ? `e.g. ${a.examples.join(', ')}` : undefined}
+                                  placeholder={getPlaceholder(a.examples)}
                                   value={(row[a.name] as string) ?? ''}
                                   onChange={(e) => update(ri, a.name, e.target.value)}
                                   onBlur={() => handleAttributeBlur(ri, a.name, a.description, a.examples, a.promptConfig)}
@@ -197,8 +219,8 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                         variant="ghost"
                         className="h-12 w-12 p-0 text-slate-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:bg-transparent"
                         onClick={() => removeRow(ri)}
-                        disabled={rows.length <= 1}
-                        title={rows.length <= 1 ? "Cannot delete the last row" : "Delete row"}
+                        disabled={realRows.length === 0}
+                        title={realRows.length === 0 ? "Cannot delete empty row" : "Delete row"}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
                       </Button>

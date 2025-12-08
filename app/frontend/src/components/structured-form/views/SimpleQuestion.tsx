@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { SimpleQuestion } from '../types';
@@ -9,6 +9,7 @@ import { getInputStyles, StatusIcon, type FieldRating } from '../ratings/FieldRa
 export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, rating }: { q: SimpleQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; rating?: FieldRating }) {
   const [isRating, setIsRating] = useState(false);
   const [shake, setShake] = useState(false);
+  const lastEvaluatedValueRef = useRef<string>('');
 
   // Trigger shake on invalid rating
   useEffect(() => {
@@ -29,6 +30,12 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
       return;
     }
 
+    // Skip if value hasn't changed since last evaluation
+    if (currentValue === lastEvaluatedValueRef.current) {
+      console.log('[SimpleQuestion] Skipping rating - value unchanged');
+      return;
+    }
+
     console.log('[SimpleQuestion] Starting rating...');
     setIsRating(true);
     const ratingResult = await rateSimpleField(q.question, currentValue, q.examples, q.promptConfig);
@@ -36,9 +43,19 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
     setIsRating(false);
 
     if (ratingResult) {
+      lastEvaluatedValueRef.current = currentValue;
       onRatingChange(path, ratingResult);
     }
   };
+
+  // Robustly handle examples placeholder
+  const placeholderText = q.examples
+    ?.filter(ex => ex != null)
+    .map(ex => typeof ex === 'string' ? ex : String(ex))
+    .filter(ex => ex.trim() !== '' && ex !== '[object Object]')
+    .join(', ');
+
+  const inputPlaceholder = placeholderText ? `e.g. ${placeholderText}` : undefined;
 
   return (
     <div className={shake ? 'shake' : ''}>
@@ -51,7 +68,7 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
       <div className="relative">
         <Textarea
           className={`w-full rounded-md border px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(rating)}`}
-          placeholder={q.examples && q.examples.length > 0 ? `e.g. ${q.examples.join(', ')}` : undefined}
+          placeholder={inputPlaceholder}
           value={(value[path] as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
           onBlur={handleBlur}

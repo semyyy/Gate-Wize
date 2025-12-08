@@ -14,10 +14,10 @@ router.post('/save/', async (req, res) => {
     console.log('Saving form:', spec.name, spec);
     //noramalie spec name to id "-" seperated lowercase
     const id = spec.name
-    .toLowerCase()          // lowercase
-    .trim()                 // remove extra spaces at ends
-    .replace(/\s+/g, '-')   // replace spaces with '-'
-    .replace(/[^\w\-]/g, ''); // remove non-word characters except '-'
+      .toLowerCase()          // lowercase
+      .trim()                 // remove extra spaces at ends
+      .replace(/\s+/g, '-')   // replace spaces with '-'
+      .replace(/[^\w\-]/g, ''); // remove non-word characters except '-'
     if (!id || typeof id !== 'string') {
       throw new Error('Invalid form name');
     }
@@ -52,9 +52,11 @@ router.get('/exists/:id', async (req, res) => {
   }
 });
 
-router.get('/list', async (_req, res) => {
+router.get('/list', async (req, res) => {
   try {
-    const forms = await listForms();
+    // Admin can request all forms including unpublished ones via ?includeUnpublished=true
+    const includeUnpublished = req.query.includeUnpublished === 'true';
+    const forms = await listForms(includeUnpublished);
     res.json({ ok: true, data: forms });
   } catch (e) {
     console.error(e);

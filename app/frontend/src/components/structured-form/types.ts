@@ -1,6 +1,7 @@
 export type FormSpec = {
   name: string;
   description?: string;
+  status: 'draft' | 'published';
   sections: Section[];
 };
 

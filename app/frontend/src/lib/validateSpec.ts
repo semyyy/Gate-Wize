@@ -5,6 +5,9 @@ export function validateSpec(obj: any): string[] {
     return errs;
   }
   if (!obj.name || typeof obj.name !== 'string') errs.push('`name` is required (string).');
+  if (!obj.status || !['draft', 'published'].includes(obj.status)) {
+    errs.push('`status` is required and must be either "draft" or "published".');
+  }
   if (!Array.isArray(obj.sections)) errs.push('`sections` must be an array.');
   if (Array.isArray(obj.sections)) {
     obj.sections.forEach((s: any, si: number) => {
