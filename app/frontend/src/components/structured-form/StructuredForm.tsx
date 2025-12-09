@@ -110,7 +110,7 @@ function SectionView({ section, path, setValue, value, ratings, index, onRatingC
 }
 
 function QuestionView({ q, path, value, onChange, onRatingChange, ratings }: { q: Question; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating> }) {
-  if (q.type === 'simple') return <SimpleQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} rating={ratings?.[path]} />;
+  if (q.type === 'simple') return <SimpleQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} rating={ratings?.[path]} ratings={ratings} />;
   if (q.type === 'option') return <OptionQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
   if (q.type === 'detailed') return <DetailedQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} ratings={ratings} />;
   if (q.type === 'image') return <ImageQuestionView q={q as any} path={path} value={value} onChange={onChange} />;

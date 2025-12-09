@@ -39,6 +39,7 @@ const default_form: FormSpec = {
         {
           "type": "simple",
           "question": "Describe the main business problem this project solves",
+          "multiple": true,
           "examples": [
             "High customer churn due to poor mobile experience",
             "Manual inventory tracking causing stock discrepancies",

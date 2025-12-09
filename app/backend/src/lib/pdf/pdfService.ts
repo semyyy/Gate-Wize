@@ -126,6 +126,7 @@ type SimpleQuestion = {
   question: string;
   description?: string;
   examples?: string[];
+  multiple?: boolean;
 };
 
 type OptionQuestion = {
@@ -195,12 +196,31 @@ function escapeHtml(text: string): string {
  * Generate HTML for a simple question
  */
 function renderSimpleQuestion(q: Question & { type: 'simple' }, path: string, value: Record<string, unknown>): string {
-  const answer = value[path] as string | undefined;
+  const answer = value[path];
+  let answerHtml = '';
+
+  // Handle multiple responses
+  if (q.multiple && Array.isArray(answer)) {
+    if (answer.length === 0) {
+      answerHtml = '<em>No answers provided</em>';
+    } else {
+      const listItems = answer
+        .filter(item => item && String(item).trim())
+        .map(item => `<li>${escapeHtml(String(item))}</li>`)
+        .join('');
+      answerHtml = listItems ? `<ul class="response-list">${listItems}</ul>` : '<em>No answers provided</em>';
+    }
+  } else {
+    // Handle single response
+    const singleAnswer = typeof answer === 'string' ? answer : '';
+    answerHtml = singleAnswer ? escapeHtml(singleAnswer) : '<em>No answer provided</em>';
+  }
+
   return `
     <div class="question">
       <h3>${escapeHtml(q.question)}</h3>
       ${q.description ? `<p class="description">${escapeHtml(q.description)}</p>` : ''}
-      <div class="answer">${answer ? escapeHtml(answer) : '<em>No answer provided</em>'}</div>
+      <div class="answer">${answerHtml}</div>
     </div>
   `;
 }
@@ -441,6 +461,21 @@ function generateHtml(req: ExportPdfRequest): string {
 
     .answer em {
       color: ${config.colors.text.light};
+    }
+
+    .response-list {
+      margin: 0;
+      padding-left: 20px;
+      list-style-type: disc;
+    }
+
+    .response-list li {
+      margin-bottom: ${config.spacing.margin.elementSmall};
+      line-height: ${config.typography.lineHeight.relaxed};
+    }
+
+    .response-list li:last-child {
+      margin-bottom: 0;
     }
 
     .justification {

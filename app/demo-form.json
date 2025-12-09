@@ -28,7 +28,8 @@
             "High customer churn due to poor mobile experience",
             "Manual inventory tracking causing stock discrepancies",
             "Slow checkout process reducing conversion rates"
-          ]
+          ],
+          "multiple": true
         }
       ]
     },
@@ -149,7 +150,8 @@
             "Must integrate with existing SAP system",
             "Limited to AWS cloud infrastructure",
             "Need to support 10,000 concurrent users"
-          ]
+          ],
+          "multiple": true
         }
       ]
     }

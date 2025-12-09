@@ -25,6 +25,7 @@ export type SimpleQuestion = {
   description?: string;
   examples?: string[];
   promptConfig?: PromptConfig;
+  multiple?: boolean; // Enable multiple responses
 };
 
 export type OptionQuestion = {
