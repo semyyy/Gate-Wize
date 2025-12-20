@@ -190,7 +190,10 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
 
                 <div className="flex-1 relative">
                   <Textarea
-                    className={`w-full rounded-md border px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(fieldRating)}`}
+                    className={`w-full rounded-md border px-4 py-3 text-lg 
+                      shadow-sm transition-all 
+                      outline-none placeholder:text-muted-foreground
+                       focus:ring-1 ${getInputStyles(fieldRating)}`}
                     placeholder={inputPlaceholder}
                     value={item.value}
                     onChange={(e) => handleResponseChange(item.id, e.target.value)}
