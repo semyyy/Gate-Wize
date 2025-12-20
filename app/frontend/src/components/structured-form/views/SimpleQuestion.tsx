@@ -143,9 +143,9 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
     ?.filter(ex => ex != null)
     .map(ex => typeof ex === 'string' ? ex : String(ex))
     .filter(ex => ex.trim() !== '' && ex !== '[object Object]')
-    .join(', ');
+    .join('\n');
 
-  const inputPlaceholder = placeholderText ? `e.g. ${placeholderText}` : undefined;
+  const inputPlaceholder = placeholderText ? `${placeholderText}` : undefined;
 
   // Get rating for specific field
   const getFieldRating = (id: string): FieldRating | undefined => {
@@ -190,10 +190,7 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
 
                 <div className="flex-1 relative">
                   <Textarea
-                    className={`w-full rounded-md border px-4 py-3 text-lg 
-                      shadow-sm transition-all 
-                      outline-none placeholder:text-muted-foreground
-                       focus:ring-1 ${getInputStyles(fieldRating)}`}
+                    className={`h-32 w-full rounded-md border px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(fieldRating)}`}
                     placeholder={inputPlaceholder}
                     value={item.value}
                     onChange={(e) => handleResponseChange(item.id, e.target.value)}

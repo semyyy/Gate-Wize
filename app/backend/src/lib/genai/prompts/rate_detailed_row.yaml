@@ -44,9 +44,11 @@ guidelines: |
     - Alignment: Does it match the style and format of the examples (if provided)?
   - Provide a brief, actionable comment (1-2 sentences max):
     - If the value is good, acknowledge it positively.
-    - If it needs improvement, suggest specific enhancements.
+    - If it needs improvement, suggest specific enhancements based on what is missing or what is wrong.
     - Reference other attributes if it helps provide context.
     - Be constructive and helpful, not critical.
+    - if one sentence is enough to express the comment, do not add a second one.
+    - if the rate is valid add only one sentence.
   - Assign a rate:
     - "valid": Value is clear, complete, well-formed, and contextually appropriate.
     - "partial": Value is acceptable but could be improved.
