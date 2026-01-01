@@ -3,14 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { StructuredForm } from '@/components/structured-form/StructuredForm';
 import { JsonEditor, type JsonEditorError } from '@/components/json/JsonEditor';
-import { parse, printParseErrorCode, type ParseError } from 'jsonc-parser';
-import { saveForm, formExists, loadForm } from '@/lib/formApi';
+import { parse, parseTree, getLocation, findNodeAtLocation, printParseErrorCode, type ParseError } from 'jsonc-parser';
+import { saveForm, formExists, loadForm, type FieldRatingResult } from '@/lib/formApi';
 import { useFormList } from '@/hooks/useFormList';
 import { formIdFromName } from '@/lib/slug';
 import type { FormSpec } from '@/components/structured-form/types';
 import { validateSpec } from '@/lib/validateSpec';
 import { Dialog, DialogContent, DialogHeader, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { StatusIndicator } from '@/components/ui/status-indicator';
 
 const default_form: FormSpec = {
   "name": "Demo Form - All Features",
@@ -201,6 +202,54 @@ export default function AdminPage() {
   // Single-document editor with first-save then autosync
 
 
+  const [activePath, setActivePath] = useState<string | null>(null);
+  const [editorScrollOffset, setEditorScrollOffset] = useState<number | null>(null);
+
+  // Sync Preview -> Editor
+  const handleSyncFromPreview = (path: string) => {
+    const segments: (string | number)[] = [];
+
+    // Simple regex parser for path string: sections[0].questions[1] -> ['sections', 0, 'questions', 1]
+    const regex = /(\w+)|\[(\d+)\]/g;
+    let match;
+    while ((match = regex.exec(path)) !== null) {
+      if (match[1]) {
+        segments.push(match[1]);
+      } else if (match[2]) {
+        segments.push(parseInt(match[2], 10));
+      }
+    }
+
+    const errors: ParseError[] = [];
+    const root = parseTree(text, errors);
+    if (root) {
+      const node = findNodeAtLocation(root, segments);
+      if (node && node.offset !== undefined) {
+        setEditorScrollOffset(node.offset);
+      }
+    }
+  };
+
+  const handleSyncFromEditor = (offset: number) => {
+    // Offset -> Path
+    const location = getLocation(text, offset);
+    if (location.path) {
+      // Convert array path to string path
+      // ['sections', 0, 'questions', 1] -> sections[0].questions[1]
+      let pathStr = '';
+      location.path.forEach((seg) => {
+        if (typeof seg === 'number') {
+          pathStr += `[${seg}]`;
+        } else {
+          if (pathStr) pathStr += '.';
+          pathStr += seg;
+        }
+      });
+      setActivePath(pathStr);
+    }
+  };
+
+
   // utilities moved to lib/formUtils
 
   // Load selected form into editor
@@ -358,6 +407,71 @@ export default function AdminPage() {
     };
   }, [spec, parseErrors, validationErrors]);
 
+  // We need to import FieldRating from where it's defined or redefine it compatible
+  type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string };
+  const [previewValue, setPreviewValue] = useState<Record<string, unknown>>({});
+  const [previewRatings, setPreviewRatings] = useState<Record<string, FieldRating>>({});
+
+  // Reset preview state when spec changes (e.g. loaded new form or edited json)
+  useEffect(() => {
+    setPreviewValue({});
+    setPreviewRatings({});
+  }, [spec]);
+
+  // Helper to determine if a value is effectively empty
+  const isEmpty = (v: unknown) => {
+    if (v === null || v === undefined) return true;
+    if (typeof v === 'string' && v.trim() === '') return true;
+    return false;
+  };
+
+  // Helper to look up value from flat form state using rating path
+  const resolveValue = (formValue: Record<string, unknown>, path: string): unknown => {
+    // 1. Direct match (Simple questions)
+    if (path in formValue) return formValue[path];
+
+    // 2. Nested match (Detailed questions: sX.qY.rowIndex.attrName)
+    // Matches standard StructuredForm path generation: s0.q0.1.attributeName
+    const match = path.match(/^(s\d+\.q\d+)\.(\d+)\.(.+)$/);
+    if (match) {
+      const [, baseKey, methodStr, attr] = match;
+      const array = formValue[baseKey];
+      if (Array.isArray(array)) {
+        const index = parseInt(methodStr, 10);
+        return array[index]?.[attr];
+      }
+    }
+    return undefined;
+  };
+
+  const handlePreviewRatingChange = (path: string, rating: FieldRatingResult | null) => {
+    if (!rating) return;
+    const normalized: FieldRating = {
+      comment: rating.comment,
+      rate: rating.rate || 'partial'
+    };
+    setPreviewRatings(prev => ({ ...prev, [path]: normalized }));
+  };
+
+  const handlePreviewValueChange = (newValue: Record<string, unknown>) => {
+    // Check for cleared values and remove corresponding ratings
+    let nextRatings = { ...previewRatings };
+    let ratingsChanged = false;
+
+    for (const path of Object.keys(nextRatings)) {
+      const val = resolveValue(newValue, path);
+      if (isEmpty(val)) {
+        delete nextRatings[path];
+        ratingsChanged = true;
+      }
+    }
+
+    if (ratingsChanged) {
+      setPreviewRatings(nextRatings);
+    }
+    setPreviewValue(newValue);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 h-screen">
 
@@ -405,7 +519,10 @@ export default function AdminPage() {
                 {forms.map((f) => (
                   <DropdownMenuItem
                     key={f.id}
-                    onClick={() => setSelectedFormId(f.id)}
+                    onClick={() => {
+                      if (f.id === selectedFormId) return;
+                      setSelectedFormId(f.id);
+                    }}
                     className="cursor-pointer"
                   >
                     <div className="flex items-center gap-2 w-full">
@@ -627,7 +744,13 @@ export default function AdminPage() {
 
 
         <div className="mt-2 flex-1 min-h-0">
-          <JsonEditor value={text} onChange={setText} errors={parseErrors} className="h-full" />
+          <JsonEditor
+            value={text}
+            onChange={setText}
+            errors={parseErrors}
+            className="h-full"
+            scrollToOffset={editorScrollOffset}
+          />
         </div>
       </section>
 
@@ -644,17 +767,9 @@ export default function AdminPage() {
               <span className="text-sm text-red-600">Parse errors: {parseErrors.length}. Showing last valid.</span>
             ) : validationErrors.length > 0 ? (
               <span className="text-sm text-amber-600">Spec issues: {validationErrors.length}. Showing last valid.</span>
-            ) : saveStatus === 'saving' ? (
-              <span className="text-sm text-blue-600">Saving…</span>
-            ) : saveStatus === 'error' ? (
-              <span className="text-sm text-red-600">Save failed{saveErrorRef.current ? `: ${saveErrorRef.current}` : ''}</span>
-            ) : saveStatus === 'unsaved' ? (
-              <span className="text-sm text-amber-600">Unsaved changes</span>
-            ) : saveStatus === 'saved' ? (
-              <span className="text-sm text-emerald-600">Saved</span>
-            ) : saveStatus === 'synced' ? (
-              <span className="text-sm text-emerald-600">Synced</span>
-            ) : null}
+            ) : (
+              <StatusIndicator status={saveStatus} errorMessage={saveErrorRef.current} />
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -718,7 +833,14 @@ export default function AdminPage() {
           {text.trim().length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Start by uploading JSON or using the default template.</div>
           ) : (
-            <StructuredForm spec={spec} />
+            <StructuredForm
+              spec={spec}
+              value={previewValue}
+              onChange={handlePreviewValueChange}
+              ratings={previewRatings}
+              onRatingChange={handlePreviewRatingChange}
+              onSyncRequest={handleSyncFromPreview}
+            />
           )}
         </div>
       </section>

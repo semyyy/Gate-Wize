@@ -15,7 +15,7 @@ interface ResponseItem {
   value: string;
 }
 
-export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, rating, ratings }: { q: SimpleQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; rating?: FieldRating; ratings?: Record<string, FieldRating> }) {
+export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, rating, ratings, jsonPath }: { q: SimpleQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; rating?: FieldRating; ratings?: Record<string, FieldRating>; jsonPath: string }) {
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const lastEvaluatedValuesRef = useRef<Map<string, string>>(new Map());
@@ -138,14 +138,21 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
     }
   };
 
-  // Robustly handle examples placeholder
-  const placeholderText = q.examples
+  // Process examples
+  const validExamples = q.examples
     ?.filter(ex => ex != null)
     .map(ex => typeof ex === 'string' ? ex : String(ex))
-    .filter(ex => ex.trim() !== '' && ex !== '[object Object]')
-    .join('\n');
+    .filter(ex => ex.trim() !== '' && ex !== '[object Object]') || [];
 
-  const inputPlaceholder = placeholderText ? `${placeholderText}` : undefined;
+  const visibleExamples = validExamples.slice(0, 3);
+  const hiddenExamples = validExamples.slice(3);
+
+  // Join visible examples with newlines for the placeholder
+  const placeholderText = visibleExamples.join('\n');
+
+  const hoverTooltip = hiddenExamples.length > 0
+    ? `More examples:\n${hiddenExamples.join('\n')}`
+    : undefined;
 
   // Get rating for specific field
   const getFieldRating = (id: string): FieldRating | undefined => {
@@ -156,9 +163,9 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
   };
 
   return (
-    <div>
+    <div data-json-path={jsonPath}>
       <div className="mb-3">
-        <Label className="block text-lg font-medium text-slate-900">{q.question}</Label>
+        <Label className="block text-lg font-medium text-slate-900" data-json-path={`${jsonPath}.question`}>{q.question}</Label>
         {q.description ? (
           <div className="mt-1 text-sm text-muted-foreground">{q.description}</div>
         ) : null}
@@ -188,10 +195,10 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
                   </button>
                 )}
 
-                <div className="flex-1 relative">
+                <div className="flex-1 relative" title={hoverTooltip}>
                   <Textarea
                     className={`h-32 w-full rounded-md border px-4 py-3 text-lg shadow-sm transition-all outline-none placeholder:text-muted-foreground focus:ring-1 ${getInputStyles(fieldRating)}`}
-                    placeholder={inputPlaceholder}
+                    placeholder={placeholderText}
                     value={item.value}
                     onChange={(e) => handleResponseChange(item.id, e.target.value)}
                     onBlur={() => handleBlur(item.id, item.value)}

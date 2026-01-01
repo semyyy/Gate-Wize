@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { OptionQuestion } from '../types';
 
-export function OptionQuestionView({ q, path, value, onChange }: { q: OptionQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void }) {
+export function OptionQuestionView({ q, path, value, onChange, jsonPath }: { q: OptionQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; jsonPath: string }) {
   // Handle both single and multiple selection modes
   const isMultiple = q.multiple === true;
 
@@ -29,9 +29,9 @@ export function OptionQuestionView({ q, path, value, onChange }: { q: OptionQues
   const hasSelection = isMultiple ? selectedMultiple.length > 0 : !!selectedSingle;
 
   return (
-    <div>
+    <div data-json-path={jsonPath}>
       <div className="mb-3">
-        <Label className="block text-lg font-medium text-slate-900">
+        <Label className="block text-lg font-medium text-slate-900" data-json-path={`${jsonPath}.question`}>
           {q.question}
           {isMultiple && <span className="ml-2 text-sm font-normal text-muted-foreground">(Multiple selections allowed)</span>}
         </Label>

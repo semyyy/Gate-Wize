@@ -6,6 +6,7 @@ import { useFormList } from '@/hooks/useFormList';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { loadForm, rateForm, exportFormToPdf, type FieldRating, type RatingsResponse } from '@/lib/formApi';
 import type { FormSpec } from '@/components/structured-form/types';
+import type { SaveStatus } from '@/components/ui/status-indicator';
 import ViewerToolbar from '@/components/forms/ViewerToolbar';
 import { Dialog, DialogContent, DialogHeader, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,17 @@ export default function UserPage() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerSaveStatus = () => {
+    setSaveStatus('saving');
+    // Simulate a brief "saving" state for UX before showing "synced"
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      setSaveStatus('synced');
+    }, 600);
+  };
 
   useEffect(() => {
     if (!currentId && forms.length > 0) setCurrentId(forms[0].id);
@@ -78,12 +90,57 @@ export default function UserPage() {
 
     setRatings(updatedRatings);
     saveRatings(currentId, updatedRatings);
+    triggerSaveStatus();
+  };
+
+  // Helper to determine if a value is effectively empty
+  const isEmpty = (v: unknown) => {
+    if (v === null || v === undefined) return true;
+    if (typeof v === 'string' && v.trim() === '') return true;
+    return false;
+  };
+
+  // Helper to look up value from flat form state using rating path
+  const resolveValue = (formValue: Record<string, unknown>, path: string): unknown => {
+    // 1. Direct match (Simple questions)
+    if (path in formValue) return formValue[path];
+
+    // 2. Nested match (Detailed questions: sX.qY.rowIndex.attrName)
+    // Matches standard StructuredForm path generation: s0.q0.1.attributeName
+    const match = path.match(/^(s\d+\.q\d+)\.(\d+)\.(.+)$/);
+    if (match) {
+      const [, baseKey, methodStr, attr] = match;
+      const array = formValue[baseKey];
+      if (Array.isArray(array)) {
+        const index = parseInt(methodStr, 10);
+        return array[index]?.[attr];
+      }
+    }
+    return undefined;
   };
 
   const handleValueChange = (newValue: Record<string, unknown>) => {
+    // Check for cleared values and remove corresponding ratings
+    let nextRatings = { ...ratings };
+    let ratingsChanged = false;
+
+    for (const path of Object.keys(nextRatings)) {
+      const val = resolveValue(newValue, path);
+      if (isEmpty(val)) {
+        delete nextRatings[path];
+        ratingsChanged = true;
+      }
+    }
+
+    if (ratingsChanged) {
+      setRatings(nextRatings);
+      if (currentId) saveRatings(currentId, nextRatings);
+    }
+
     setValue(newValue);
     if (currentId) {
       saveFormData(currentId, newValue);
+      triggerSaveStatus();
     }
   };
 
@@ -103,6 +160,7 @@ export default function UserPage() {
 
 
   const handleFormChange = (id: string | undefined) => {
+    if (id === currentId) return;
     setSpec(null);
     setCurrentId(id);
   };
@@ -120,6 +178,7 @@ export default function UserPage() {
             onClearForm={handleClearForm}
             onExportPdf={handleExportPdf}
             exporting={exporting}
+            saveStatus={saveStatus}
           />
         </div>
         <div ref={containerRef} className="print-area relative px-4 py-4 flex-1 min-h-0 overflow-auto">
@@ -128,7 +187,7 @@ export default function UserPage() {
           ) : null}
           {spec ? (
             <div className="avoid-break">
-              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings} />
+              <StructuredForm spec={spec} onChange={handleValueChange} value={value} ratings={ratings} onRatingChange={handleRatingChange} />
             </div>
           ) : forms.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">No forms available.</div>

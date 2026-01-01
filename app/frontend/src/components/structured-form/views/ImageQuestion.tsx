@@ -3,11 +3,12 @@ import { useState, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import type { ImageQuestion } from '../types';
 
-export function ImageQuestionView({ q, path, value, onChange }: {
+export function ImageQuestionView({ q, path, value, onChange, jsonPath }: {
     q: ImageQuestion;
     path: string;
     value: Record<string, unknown>;
     onChange: (v: unknown) => void;
+    jsonPath: string;
 }) {
     const [imageError, setImageError] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -88,9 +89,9 @@ export function ImageQuestionView({ q, path, value, onChange }: {
     };
 
     return (
-        <div>
+        <div data-json-path={jsonPath}>
             <div className="mb-3">
-                <Label className="block text-lg font-medium text-slate-900">{q.question}</Label>
+                <Label className="block text-lg font-medium text-slate-900" data-json-path={`${jsonPath}.question`}>{q.question}</Label>
                 {q.description ? (
                     <div className="mt-1 text-sm text-muted-foreground">{q.description}</div>
                 ) : null}

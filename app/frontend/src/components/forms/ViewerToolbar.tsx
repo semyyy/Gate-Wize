@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { StatusIndicator, type SaveStatus } from '@/components/ui/status-indicator';
 
 export default function ViewerToolbar({
   forms,
@@ -12,6 +13,7 @@ export default function ViewerToolbar({
   onClearForm,
   onExportPdf,
   exporting,
+  saveStatus = 'idle',
 }: {
   forms: { id: string; name: string }[];
   currentId?: string;
@@ -21,6 +23,7 @@ export default function ViewerToolbar({
   onClearForm?: () => void;
   onExportPdf?: () => void;
   exporting?: boolean;
+  saveStatus?: SaveStatus;
 }) {
   const nameCounts = React.useMemo(() => {
     const m = new Map<string, number>();
@@ -81,13 +84,18 @@ export default function ViewerToolbar({
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" aria-label="Refreshing" />
           <span className="text-sm">Refreshing…</span>
         </div>
+      ) : saveStatus !== 'idle' ? (
+        <StatusIndicator status={saveStatus} />
       ) : justRefreshed ? (
         <span className="text-sm text-emerald-600" aria-live="polite">Updated</span>
       ) : null}
 
       <div className="flex-1" />
       <button
-        className="border border-indigo-300 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded px-3 py-1 text-sm disabled:opacity-50 transition-colors flex items-center gap-2"
+        className="border border-gray-300 bg-white
+         hover:bg-gray-50 text-gray-700 rounded px-3 py-1 
+         text-sm disabled:opacity-50 transition-colors flex 
+         items-center gap-2"
         onClick={onExportPdf}
         disabled={!currentId || loading || exporting}
         title="Export form as PDF"
@@ -95,7 +103,7 @@ export default function ViewerToolbar({
       >
         {exporting ? (
           <>
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-600" />
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
             <span>Exporting...</span>
           </>
         ) : (
@@ -108,7 +116,7 @@ export default function ViewerToolbar({
         )}
       </button>
       <button
-        className="border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 rounded px-3 py-1 text-sm disabled:opacity-50 transition-colors"
+        className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 rounded px-3 py-1 text-sm disabled:opacity-50 transition-colors"
         onClick={onClearForm}
         disabled={!currentId || loading}
         title="Clear all form data"
@@ -116,6 +124,6 @@ export default function ViewerToolbar({
       >
         Clear Form
       </button>
-    </div>
+    </div >
   );
 }

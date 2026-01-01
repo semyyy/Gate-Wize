@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { FormSpec, Question, Section } from './types';
 import { SimpleQuestionView } from './views/SimpleQuestion';
 import { OptionQuestionView } from './views/OptionQuestion';
@@ -9,9 +9,10 @@ import { ImageQuestionView } from './views/ImageQuestion';
 import { FieldRatingView, type FieldRating } from './ratings/FieldRating';
 import type { FieldRatingResult } from '@/lib/formApi';
 
-export function StructuredForm({ spec, onChange, ratings: externalRatings, value: externalValue }: { spec: FormSpec; onChange?: (value: Record<string, unknown>) => void; ratings?: Record<string, FieldRating>; value?: Record<string, unknown> }) {
+export function StructuredForm({ spec, onChange, ratings: externalRatings, value: externalValue, onRatingChange, onSyncRequest }: { spec: FormSpec; onChange?: (value: Record<string, unknown>) => void; ratings?: Record<string, FieldRating>; value?: Record<string, unknown>; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; onSyncRequest?: (path: string) => void }) {
   const [internalValue, setInternalValue] = useState<Record<string, unknown>>({});
   const [internalRatings, setInternalRatings] = useState<Record<string, FieldRating>>({});
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Use external value if provided, otherwise use internal state
   const value = externalValue !== undefined ? externalValue : internalValue;
@@ -31,6 +32,11 @@ export function StructuredForm({ spec, onChange, ratings: externalRatings, value
   };
 
   const handleRatingChange = (path: string, rating: FieldRatingResult | null) => {
+    if (onRatingChange) {
+      onRatingChange(path, rating);
+      return;
+    }
+
     if (!rating) return;
 
     const fieldRating: FieldRating = {
@@ -59,48 +65,82 @@ export function StructuredForm({ spec, onChange, ratings: externalRatings, value
     }
   }, [externalValue]);
 
-
-
+  // Handle double clicks to sync (Preview -> Editor)
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if (!onSyncRequest) return;
+    let target = e.target as HTMLElement | null;
+    while (target && target !== containerRef.current) {
+      const path = target.getAttribute('data-json-path');
+      if (path) {
+        onSyncRequest(path);
+        return;
+      }
+      target = target.parentElement;
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl border border-slate-200 overflow-hidden">
+    <div
+      ref={containerRef}
+      className="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl border border-slate-200 overflow-hidden"
+      onDoubleClick={handleDoubleClick}
+    >
       <header className="bg-slate-900 text-white p-8 sm:p-10 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         <div className="relative z-10 flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2" data-json-path="name">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{spec.name}</h1>
 
             </div>
-            {spec.description && <p className="text-slate-300 text-lg font-light">{spec.description}</p>}
+            {spec.description && <p className="text-slate-300 text-lg font-light" data-json-path="description">{spec.description}</p>}
           </div>
         </div>
       </header>
       <div className="p-8 sm:p-10 space-y-12">
         {spec.sections.map((s, si) => (
-          <SectionView key={si} section={s} path={`s${si}`} setValue={set} value={value} ratings={ratings} index={si + 1} onRatingChange={handleRatingChange} />
+          <SectionView
+            key={si}
+            section={s}
+            path={`s${si}`}
+            setValue={set}
+            value={value}
+            ratings={ratings}
+            index={si + 1}
+            onRatingChange={handleRatingChange}
+            jsonPath={`sections[${si}]`}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function SectionView({ section, path, setValue, value, ratings, index, onRatingChange }: { section: Section; path: string; setValue: (key: string, v: unknown) => void; value: Record<string, unknown>; ratings?: Record<string, FieldRating>; index: number; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void }) {
+function SectionView({ section, path, setValue, value, ratings, index, onRatingChange, jsonPath }: { section: Section; path: string; setValue: (key: string, v: unknown) => void; value: Record<string, unknown>; ratings?: Record<string, FieldRating>; index: number; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; jsonPath: string }) {
   return (
-    <section className="space-y-6">
+    <section className="space-y-6" data-json-path={jsonPath}>
       <div className="border-b border-slate-200 pb-4 mb-6">
-        <h2 className="text-2xl font-semibold text-slate-900 flex items-center gap-2">
+        <h2 className="text-2xl font-semibold text-slate-900 flex items-center gap-2" data-json-path={`${jsonPath}.title`}>
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">{index}</span>
           {section.title}
         </h2>
-        {section.description && <p className="text-muted-foreground text-lg mt-1 ml-10">{section.description}</p>}
+        {section.description && <p className="text-muted-foreground text-lg mt-1 ml-10" data-json-path={`${jsonPath}.description`}>{section.description}</p>}
       </div>
       <div className="grid gap-6 mt-3">
         {section.questions.map((q, qi) => {
           const qPath = `${path}.q${qi}`;
+          const qJsonPath = `${jsonPath}.questions[${qi}]`;
           return (
             <div key={qi} className="space-y-2">
-              <QuestionView q={q} path={qPath} value={value} onChange={(v) => setValue(qPath, v)} onRatingChange={onRatingChange} ratings={ratings} />
+              <QuestionView
+                q={q}
+                path={qPath}
+                value={value}
+                onChange={(v) => setValue(qPath, v)}
+                onRatingChange={onRatingChange}
+                ratings={ratings}
+                jsonPath={qJsonPath}
+              />
             </div>
           );
         })}
@@ -109,11 +149,11 @@ function SectionView({ section, path, setValue, value, ratings, index, onRatingC
   );
 }
 
-function QuestionView({ q, path, value, onChange, onRatingChange, ratings }: { q: Question; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating> }) {
-  if (q.type === 'simple') return <SimpleQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} rating={ratings?.[path]} ratings={ratings} />;
-  if (q.type === 'option') return <OptionQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
-  if (q.type === 'detailed') return <DetailedQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} ratings={ratings} />;
-  if (q.type === 'image') return <ImageQuestionView q={q as any} path={path} value={value} onChange={onChange} />;
+function QuestionView({ q, path, value, onChange, onRatingChange, ratings, jsonPath }: { q: Question; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating>; jsonPath: string }) {
+  if (q.type === 'simple') return <SimpleQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} rating={ratings?.[path]} ratings={ratings} jsonPath={jsonPath} />;
+  if (q.type === 'option') return <OptionQuestionView q={q as any} path={path} value={value} onChange={onChange} jsonPath={jsonPath} />;
+  if (q.type === 'detailed') return <DetailedQuestionView q={q as any} path={path} value={value} onChange={onChange} onRatingChange={onRatingChange} ratings={ratings} jsonPath={jsonPath} />;
+  if (q.type === 'image') return <ImageQuestionView q={q as any} path={path} value={value} onChange={onChange} jsonPath={jsonPath} />;
   return null;
 }
 
