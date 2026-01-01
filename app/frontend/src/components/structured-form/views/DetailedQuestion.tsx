@@ -142,21 +142,34 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
         ) : null}
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+      <div className="w-full">
+        <table className="w-full border-collapse text-sm table-fixed">
           <thead>
             <tr>
-              {q.attributes.map((a, i) => (
-                <th
-                  key={a.name}
-                  className="text-left border-b border-slate-200 p-2 text-xs uppercase tracking-wide text-slate-500 font-semibold"
-                  title={a.description}
-                  style={a.width ? { width: `${a.width * 100}%` } : undefined}
-                  data-json-path={`${jsonPath}.attributes[${i}]`}
-                >
-                  {a.name}
-                </th>
-              ))}
+              {q.attributes.map((a, i) => {
+                // Calculate effective width logic
+                // 1. Sum distinct widths
+                const totalExplicitWidth = q.attributes.reduce((sum, attr) => sum + (attr.width || 0), 0);
+                // 2. Count attributes without explicit width
+                const implicitCount = q.attributes.filter(attr => attr.width === undefined).length;
+                // 3. Calculate width for implicit columns
+                const remainingWidth = Math.max(0, 1 - totalExplicitWidth);
+                const implicitWidth = implicitCount > 0 ? remainingWidth / implicitCount : 0;
+
+                const effectiveWidth = a.width !== undefined ? a.width : implicitWidth;
+
+                return (
+                  <th
+                    key={a.name}
+                    className="text-left border-b border-slate-200 p-2 text-xs uppercase tracking-wide text-slate-500 font-semibold"
+                    title={a.description}
+                    style={{ width: `${effectiveWidth * 100}%` }}
+                    data-json-path={`${jsonPath}.attributes[${i}]`}
+                  >
+                    {a.name}
+                  </th>
+                );
+              })}
               <th className="w-px"></th>
             </tr>
           </thead>

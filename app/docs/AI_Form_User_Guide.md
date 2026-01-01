@@ -138,6 +138,13 @@ A table for complex data entry.
 ![Alt text](images/detailed_question2.png)
 > **Important**: An attribute cannot have both `options` and `examples`. Use `options` for a dropdown menu, OR `examples` for a text input with hints.
 
+##### Column Width distribution
+The system uses a smart logic to distribute column widths:
+*   **Equal Split**: By default, all columns share the available width equally.
+*   **Custom Widths**: If you specify a width (e.g., `0.3` for 30%), that column is guaranteed that space.
+*   **Automatic Repartition**: Any remaining space is divided equally among the columns *without* a specific width.
+> **Note**: The sum of all specific widths must not exceed 1 (100%).
+
 #### 4. Image Question (`image`)
 For uploading or linking images.
 ```json
