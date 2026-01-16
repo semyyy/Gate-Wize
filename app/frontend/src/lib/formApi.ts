@@ -138,10 +138,11 @@ export async function exportFormToPdf(
     a.download = `${spec.name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
     document.body.appendChild(a);
     a.click();
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 5000);
 
-    // Cleanup
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
   } catch (e) {
     console.error('PDF export error:', e);
     throw e;
