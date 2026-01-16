@@ -32,29 +32,15 @@ context: |
       {{examples}}
 
 guidelines: |
-  - Consider the full context:
-    - Understand how this attribute fits into the overall question.
-    - Use the complete row data to better understand the user's intent.
-    - Check for consistency and relevance across all attributes in the row.
-  - Evaluate the attribute value based on:
-    - Clarity: Is the value clear and easy to understand?
-    - Completeness: Does it adequately address this attribute?
-    - Relevance: Does it make sense in the context of the overall question and other attributes?
-    - Consistency: Is it consistent with the other attributes in the row?
-    - Alignment: Does it match the style and format of the examples (if provided)?
-  - Provide a brief, actionable comment (1-2 sentences max):
-    - If the value is good, acknowledge it positively.
-    - If it needs improvement, suggest specific enhancements based on what is missing or what is wrong.
-    - Reference other attributes if it helps provide context.
-    - Be constructive and helpful, not critical.
-    - if one sentence is enough to express the comment, do not add a second one.
-    - if the rate is valid add only one sentence.
-  - Assign a rate:
-    - "valid": Value is clear, complete, well-formed, and contextually appropriate.
-    - "partial": Value is acceptable but could be improved.
-    - "invalid": Value is unclear, incomplete, inconsistent, or doesn't fit the context.
-    - Omit rate if you're uncertain.
-  - Keep feedback concise and specific.
+  - Ratings: |
+    - valid: The response answers all parts of the question. |
+    - partial: The response answers at least one part of the question but does not answer all required parts. |
+    - invalid: The response does not answer the question at all. |
+  - Rules: |
+    - Identify all distinct parts of the question before rating. |
+    - Do not infer missing answers. |
+    - If any required part is missing, the response cannot be valid. |
+    - Omit the rating only if the question itself cannot be evaluated. |
 
 final_instruction: |
   Return a JSON object with "comment" (string) and optionally "rate" (one of: invalid, partial, valid).

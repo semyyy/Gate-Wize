@@ -138,13 +138,20 @@ export async function exportFormToPdf(
     a.download = `${spec.name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
     document.body.appendChild(a);
     a.click();
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 5000);
 
+<<<<<<< HEAD
     // Cleanup - Delayed for Safari support
     // Safari requires the Blob URL to remain valid for a moment to initiate download
     setTimeout(() => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     }, 5000);
+=======
+>>>>>>> 465cc823ae28e1b429666d300246f690a358e99e
   } catch (e) {
     console.error('PDF export error:', e);
     throw e;
