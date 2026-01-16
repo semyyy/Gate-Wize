@@ -26,6 +26,7 @@ export type SimpleQuestion = {
   examples?: string[];
   promptConfig?: PromptConfig;
   multiple?: boolean; // Enable multiple responses
+  aiValidation?: boolean; // Enable/disable AI validation (default: true)
 };
 
 export type OptionQuestion = {
@@ -54,6 +55,7 @@ export type DetailedAttribute = {
   promptConfig?: PromptConfig;
   width?: number; // optional width as decimal (e.g., 0.3 for 30% width)
   inputType?: 'input' | 'textarea'; // optional input type (default: 'input')
+  aiValidation?: boolean; // Enable/disable AI validation (default: true)
 } & (
     | { options: string[]; examples?: never }
     | { examples: string[]; options?: never }

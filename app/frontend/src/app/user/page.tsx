@@ -116,6 +116,13 @@ export default function UserPage() {
         return array[index]?.[attr];
       }
     }
+    // 3. Simple Question Multiple match (sX.qY[id])
+    // We cannot resolve the value without the ID map, which is internal to the component.
+    // However, we should NOT delete the rating here. The component manages its own lifecycle.
+    if (path.includes('[') && path.includes(']')) {
+      return "SKIP_CHECK";
+    }
+
     return undefined;
   };
 

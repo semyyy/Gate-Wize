@@ -139,9 +139,12 @@ export async function exportFormToPdf(
     document.body.appendChild(a);
     a.click();
 
-    // Cleanup
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    // Cleanup - Delayed for Safari support
+    // Safari requires the Blob URL to remain valid for a moment to initiate download
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 5000);
   } catch (e) {
     console.error('PDF export error:', e);
     throw e;

@@ -23,6 +23,9 @@ export function validateSpec(obj: any): string[] {
 
         if (!q || typeof q !== 'object') return errs.push(`${sectionContext} > Question ${qi + 1}: invalid object.`);
         if (!['simple', 'option', 'detailed', 'image'].includes(q.type)) errs.push(`${questionContext}: invalid type.`);
+        if (q.type === 'simple' && q.aiValidation !== undefined && typeof q.aiValidation !== 'boolean') {
+          errs.push(`${questionContext}: aiValidation must be a boolean.`);
+        }
         if (!q.question || typeof q.question !== 'string') errs.push(`${questionContext}: question text is required.`);
 
         if (q.type === 'option' && !Array.isArray(q.options)) errs.push(`${questionContext}: options must be an array.`);
@@ -46,6 +49,9 @@ export function validateSpec(obj: any): string[] {
             }
             if (attr.inputType !== undefined && !['input', 'textarea'].includes(attr.inputType)) {
               errs.push(`${attrContext}: inputType must be 'input' or 'textarea'.`);
+            }
+            if (attr.aiValidation !== undefined && typeof attr.aiValidation !== 'boolean') {
+              errs.push(`${attrContext}: aiValidation must be a boolean.`);
             }
           });
 

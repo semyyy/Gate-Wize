@@ -112,6 +112,11 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
   const handleAttributeBlur = (ri: number, attrName: string, attrDescription?: string, examples?: string[], promptConfig?: { task?: string; role?: string; guidelines?: string }) => {
     const rows = rowsRef.current;
     const currentValue = (rows[ri]?.[attrName] as string) ?? '';
+
+    // Check aiValidation
+    const attribute = q.attributes.find(a => a.name === attrName);
+    if (attribute?.aiValidation === false) return;
+
     if (!currentValue.trim() || !onRatingChange) return;
 
     const ratingKey = `${path}.${ri}.${attrName}`;

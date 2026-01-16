@@ -102,8 +102,21 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
     console.log('[SimpleQuestion] handleBlur called', { path, id, onRatingChange: !!onRatingChange });
     console.log('[SimpleQuestion] currentValue:', responseValue);
 
-    if (!responseValue.trim() || !onRatingChange) {
-      console.log('[SimpleQuestion] Skipping rating - empty or no callback');
+    if (!responseValue.trim()) {
+      if (onRatingChange) {
+        const fieldPath = isMultiple ? `${path}[${id}]` : path;
+        onRatingChange(fieldPath, null);
+        lastEvaluatedValuesRef.current.delete(id);
+      }
+      return;
+    }
+
+    if (!onRatingChange) {
+      return;
+    }
+
+    // Check if AI validation is explicitly disabled
+    if (q.aiValidation === false) {
       return;
     }
 
