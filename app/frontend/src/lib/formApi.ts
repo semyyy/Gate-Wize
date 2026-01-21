@@ -52,7 +52,7 @@ export async function renameForm(id: string, name: string): Promise<void> {
   if (!r.ok) throw new Error(`rename failed: ${r.status}`);
 }
 
-export type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string };
+export type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string; suggestionResponse?: string };
 export type RatingsResponse = { ratings: Record<string, FieldRating> };
 
 export async function rateForm(spec: unknown, value: Record<string, unknown>): Promise<RatingsResponse> {
@@ -66,7 +66,7 @@ export async function rateForm(spec: unknown, value: Record<string, unknown>): P
   return (j?.data as RatingsResponse) ?? { ratings: {} };
 }
 
-export type FieldRatingResult = { comment: string; rate?: 'invalid' | 'partial' | 'valid' };
+export type FieldRatingResult = { comment: string; rate?: 'invalid' | 'partial' | 'valid'; suggestionResponse?: string };
 export type FieldRatingError = { error: true; message: string };
 export type FieldRatingResponse = FieldRatingResult | FieldRatingError | null;
 

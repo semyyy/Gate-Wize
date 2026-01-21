@@ -41,6 +41,7 @@ export function buildFieldRatingSchema() {
   return z.object({
     comment: z.string(),
     rate: z.enum(['invalid', 'partial', 'valid']).optional(),
+    suggestionResponse: z.string().optional(),
   });
 }
 

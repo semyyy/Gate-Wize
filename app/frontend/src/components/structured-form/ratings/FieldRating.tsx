@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-export type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string };
+export type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string; suggestionResponse?: string };
 
 // Helper to get input styles based on rating
 export function getInputStyles(rating?: FieldRating) {

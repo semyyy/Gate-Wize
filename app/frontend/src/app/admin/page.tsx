@@ -453,7 +453,14 @@ export default function AdminPage() {
   };
 
   const handlePreviewRatingChange = (path: string, rating: FieldRatingResult | null) => {
-    if (!rating) return;
+    if (!rating) {
+      setPreviewRatings(prev => {
+        const next = { ...prev };
+        delete next[path];
+        return next;
+      });
+      return;
+    }
     const normalized: FieldRating = {
       comment: rating.comment,
       rate: rating.rate || 'partial'

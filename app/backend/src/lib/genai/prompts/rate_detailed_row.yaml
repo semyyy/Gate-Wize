@@ -43,5 +43,8 @@ guidelines: |
     - Omit the rating only if the question itself cannot be evaluated. |
 
 final_instruction: |
-  Return a JSON object with "comment" (string) and optionally "rate" (one of: invalid, partial, valid).
+  Return a JSON object with:
+  - "comment" (string): Your feedback on the response.
+  - "rate" (optional, one of: invalid, partial, valid): The quality rating.
+  - "suggestionResponse" (optional string): If the rate is "partial" or "invalid", provide an improved version of the user's response that would be rated as "valid". This should be a complete, ready-to-use answer for this specific attribute, not instructions on how to improve.
   No explanations outside the JSON.

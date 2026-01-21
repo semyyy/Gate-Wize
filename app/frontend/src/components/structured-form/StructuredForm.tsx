@@ -37,7 +37,13 @@ export function StructuredForm({ spec, onChange, ratings: externalRatings, value
       return;
     }
 
-    if (!rating) return;
+    if (!rating) {
+      setInternalRatings((prev) => {
+        const { [path]: _, ...rest } = prev;
+        return rest;
+      });
+      return;
+    }
 
     const fieldRating: FieldRating = {
       comment: rating.comment,

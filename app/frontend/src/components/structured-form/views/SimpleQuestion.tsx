@@ -20,6 +20,7 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [errorIds, setErrorIds] = useState<Map<string, string>>(new Map());
   const lastEvaluatedValuesRef = useRef<Map<string, string>>(new Map());
+  const [undoState, setUndoState] = useState<Record<string, string>>({});
 
   // Track response items with stable IDs
   const [responseItems, setResponseItems] = useState<ResponseItem[]>([]);
@@ -237,8 +238,36 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
                     onBlur={() => handleBlur(item.id, item.value)}
                   />
 
-                  <div className="absolute right-3 top-3 pointer-events-none">
-                    <StatusIcon isLoading={isLoading} />
+                  <div className="absolute right-3 top-3 flex items-center justify-center">
+                    {isLoading ? (
+                      <div className="pointer-events-none">
+                        <StatusIcon isLoading={true} />
+                      </div>
+                    ) : undoState[item.id] !== undefined ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Undo change
+                          handleResponseChange(item.id, undoState[item.id]!);
+                          // Clear undo state
+                          setUndoState(prev => {
+                            const next = { ...prev };
+                            delete next[item.id];
+                            return next;
+                          });
+                        }}
+                        className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors cursor-pointer"
+                        title="Undo"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <div className="pointer-events-none">
+                        <StatusIcon isLoading={false} />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -256,17 +285,73 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
                 </div>
               )}
 
-              {fieldRating && !errorMessage && (
+              {(fieldRating) && !errorMessage && (
                 <div
-                  className={`py-2 ${isMultiple && responseItems.length > 1 ? 'ml-8' : ''} animate-in fade-in slide-in-from-top-2 duration-700 ease-out ${fieldRating.rate === 'valid'
+                  className={`py-2 ${isMultiple && responseItems.length > 1 ? 'ml-8' : ''} animate-in fade-in slide-in-from-top-2 duration-700 ease-out ${fieldRating?.rate === 'valid'
                     ? 'text-emerald-600'
-                    : fieldRating.rate === 'partial'
+                    : fieldRating?.rate === 'partial'
                       ? 'text-amber-600'
-                      : 'text-rose-600'
+                      : fieldRating?.rate === 'invalid'
+                        ? 'text-rose-600'
+                        : 'text-slate-600'
                     }`}
                 >
-                  <div className="text-sm leading-relaxed">
-                    {fieldRating.comment}
+                  {fieldRating && (
+                    <div className="text-sm leading-relaxed">
+                      {fieldRating.comment}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    {fieldRating?.suggestionResponse && (fieldRating.rate === 'partial' || fieldRating.rate === 'invalid') && (
+                      <div className="mt-2 w-full text-left group/suggestion relative">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Save current value for undo
+                            setUndoState(prev => ({
+                              ...prev,
+                              [item.id]: item.value
+                            }));
+
+                            handleResponseChange(item.id, fieldRating.suggestionResponse!);
+                            // Clear the rating as it's no longer valid for the new content
+                            if (onRatingChange) {
+                              const fieldPath = isMultiple ? `${path}[${item.id}]` : path;
+                              onRatingChange(fieldPath, null);
+                              // Mark as evaluated to prevent immediate re-validation
+                              lastEvaluatedValuesRef.current.set(item.id, fieldRating.suggestionResponse!);
+                            }
+                          }}
+                          className="w-full text-left p-3 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100 hover:border-indigo-200 rounded-md transition-all duration-200 cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1.5">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            Suggestion (Click to apply)
+                          </div>
+                          <div className="text-sm text-slate-700 group-hover/suggestion:text-slate-900 transition-colors pr-6">
+                            {fieldRating.suggestionResponse}
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Dismiss suggestion
+                            if (onRatingChange) {
+                              const fieldPath = isMultiple ? `${path}[${item.id}]` : path;
+                              // Update rating to remove suggestionResponse but keep comment/rate
+                              onRatingChange(fieldPath, { ...fieldRating, suggestionResponse: undefined });
+                            }
+                          }}
+                          className="absolute right-2 top-2 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors opacity-0 group-hover/suggestion:opacity-100"
+                          title="Dismiss suggestion"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

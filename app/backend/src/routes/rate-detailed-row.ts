@@ -49,7 +49,13 @@ router.post('/rate-detailed-row', async (req, res) => {
         const schema = buildFieldRatingSchema();
         const result = await llm.generateStructured({ prompt, schema });
 
-        res.json({ ok: true, data: result });
+        // Only include suggestionResponse when rate is partial or invalid
+        const response = { ...result };
+        if (response.rate === 'valid' || !response.rate) {
+            delete response.suggestionResponse;
+        }
+
+        res.json({ ok: true, data: response });
     } catch (e) {
         console.error('Detailed row rating error:', e);
         res.status(500).json({ ok: false, error: 'Internal server error' });

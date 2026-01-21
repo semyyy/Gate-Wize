@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { DetailedQuestion } from '../types';
 import { rateDetailedRow, isFieldRatingError, type FieldRatingResult } from '@/lib/formApi';
 import { getInputStyles, StatusIcon, ValidationMessage, type FieldRating } from '../ratings/FieldRating';
+import { X } from 'lucide-react';
 
 export function DetailedQuestionView({ q, path, value, onChange, onRatingChange, ratings, jsonPath }: { q: DetailedQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating>; jsonPath: string }) {
   const realRows: Record<string, unknown>[] = Array.isArray(value[path]) ? (value[path] as Record<string, unknown>[]) : [];
@@ -23,6 +24,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
   const [ratingStates, setRatingStates] = useState<Record<string, boolean>>({});
   const [errorStates, setErrorStates] = useState<Record<string, string>>({});
   const lastEvaluatedValuesRef = useRef<Record<string, string>>({});
+  const [undoState, setUndoState] = useState<Record<string, string>>({});
 
   const addRow = () => {
     const copy = realRows.length > 0 ? [...realRows] : [createEmptyRow()];
@@ -39,9 +41,77 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
     // Only allow deletion if there is more than one row
     if (rows.length <= 1) return;
 
-    // If we are in "ghost row" mode (realRows.length === 0), rows has 1 item.
-    // But the guard above handles it.
-    // So we are deleting from realRows.
+    // Helper to shift keyed objects
+    const shiftState = (
+      state: Record<string, any>,
+      keyFn: (idx: number, attr: string) => string
+    ) => {
+      const next = { ...state };
+
+      // 1. Delete all keys for the removed row
+      q.attributes.forEach(a => {
+        delete next[keyFn(ri, a.name)];
+      });
+
+      // 2. Shift all subsequent rows down
+      for (let i = ri + 1; i < rows.length; i++) {
+        q.attributes.forEach(a => {
+          const currentKey = keyFn(i, a.name);
+          const prevKey = keyFn(i - 1, a.name);
+
+          if (next[currentKey] !== undefined) {
+            next[prevKey] = next[currentKey];
+            delete next[currentKey];
+          }
+        });
+      }
+      return next;
+    };
+
+    // Update local states
+    setUndoState(prev => shiftState(prev, (idx, attr) => `${idx}.${attr}`));
+    setRatingStates(prev => shiftState(prev, (idx, attr) => `${path}.${idx}.${attr}`));
+    setErrorStates(prev => shiftState(prev, (idx, attr) => `${path}.${idx}.${attr}`));
+
+    // Update global ratings (if handler exists)
+    if (onRatingChange && ratings) {
+      // We need to shift ratings locally first to avoid race conditions or just emit events
+      // Since we can't atomically update parent, we trigger moving
+
+      // Iterate from deleted index up to end
+      for (let i = ri; i < rows.length; i++) {
+        q.attributes.forEach(a => {
+          // Target: the path at index i (which will become the new value for this slot)
+          // Source: the path at index i + 1
+
+          const targetKey = `${path}.${i}.${a.name}`;
+
+          if (i === rows.length - 1) {
+            // Last item, just clear it (it's being removed/shifted out)
+            onRatingChange(targetKey, null);
+          } else {
+            const sourceKey = `${path}.${i + 1}.${a.name}`;
+            const sourceRating = ratings[sourceKey];
+
+            // Move source to target
+            // onRatingChange expects FieldRatingResult, but we have FieldRating
+            // We need to map it back or just pass what we have if the type allows?
+            // FieldRatingResult has { rate, comment, suggestionResponse? }
+            // FieldRating has same structure usually.
+
+            if (sourceRating) {
+              onRatingChange(targetKey, {
+                rate: sourceRating.rate as 'valid' | 'partial' | 'invalid', // Cast to ensure type compatibility
+                comment: sourceRating.comment,
+                suggestionResponse: sourceRating.suggestionResponse
+              });
+            } else {
+              onRatingChange(targetKey, null);
+            }
+          }
+        });
+      }
+    }
 
     const copy = [...realRows];
     copy.splice(ri, 1);
@@ -196,13 +266,15 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
               const rowRatings = q.attributes
                 .map((a) => {
                   const ratingKey = `${path}.${ri}.${a.name}`;
+                  const undoKey = `${ri}.${a.name}`;
                   return {
                     attributeName: a.name,
                     rating: ratings?.[ratingKey],
                     errorMessage: errorStates[ratingKey],
+                    hasUndo: undoState[undoKey] !== undefined
                   };
                 })
-                .filter((r) => r.rating !== undefined || r.errorMessage);
+                .filter((r) => r.rating !== undefined || r.errorMessage || r.hasUndo);
 
               return (
                 <>
@@ -249,8 +321,35 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                                 />
                               )}
 
-                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-                                <StatusIcon isLoading={isRating} />
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                                {isRating ? (
+                                  <div className="pointer-events-none">
+                                    <StatusIcon isLoading={true} />
+                                  </div>
+                                ) : undoState[`${ri}.${a.name}`] !== undefined ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const undoKey = `${ri}.${a.name}`;
+                                      update(ri, a.name, undoState[undoKey]!);
+                                      setUndoState(prev => {
+                                        const next = { ...prev };
+                                        delete next[undoKey];
+                                        return next;
+                                      });
+                                    }}
+                                    className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors cursor-pointer"
+                                    title="Undo"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                    </svg>
+                                  </button>
+                                ) : (
+                                  <div className="pointer-events-none">
+                                    <StatusIcon isLoading={false} />
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}
@@ -295,7 +394,9 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                                 </div>
                               );
                             }
+
                             if (!rating) return null;
+
                             const textColor = rating.rate === 'valid'
                               ? 'text-emerald-600'
                               : rating.rate === 'partial'
@@ -315,6 +416,57 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                                 <div className="text-sm leading-relaxed">
                                   {rating.comment}
                                 </div>
+                                {rating.suggestionResponse && (rating.rate === 'partial' || rating.rate === 'invalid') && (
+                                  <div className="flex flex-col gap-2">
+                                    <div className="mt-2 w-full text-left group/suggestion relative">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          // Save current value for undo
+                                          const undoKey = `${ri}.${attributeName}`;
+                                          setUndoState(prev => ({
+                                            ...prev,
+                                            [undoKey]: (rows[ri]?.[attributeName] as string) || ''
+                                          }));
+
+                                          update(ri, attributeName, rating.suggestionResponse!);
+                                          if (onRatingChange) {
+                                            const ratingKey = `${path}.${ri}.${attributeName}`;
+                                            onRatingChange(ratingKey, null);
+                                            lastEvaluatedValuesRef.current[ratingKey] = rating.suggestionResponse!;
+                                          }
+                                        }}
+                                        className="w-full text-left p-3 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100 hover:border-indigo-200 rounded-md transition-all duration-200 cursor-pointer"
+                                      >
+                                        <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1.5">
+                                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                          </svg>
+                                          Suggestion (Click to apply)
+                                        </div>
+                                        <div className="text-sm text-slate-700 group-hover/suggestion:text-slate-900 transition-colors pr-6">
+                                          {rating.suggestionResponse}
+                                        </div>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          // Dismiss suggestion
+                                          if (onRatingChange) {
+                                            const ratingKey = `${path}.${ri}.${attributeName}`;
+                                            // Update rating to remove suggestionResponse but keep comment/rate
+                                            onRatingChange(ratingKey, { ...rating, suggestionResponse: undefined });
+                                          }
+                                        }}
+                                        className="absolute right-2 top-2 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors opacity-0 group-hover/suggestion:opacity-100"
+                                        title="Dismiss suggestion"
+                                      >
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             );
                           })}

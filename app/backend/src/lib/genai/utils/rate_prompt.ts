@@ -77,4 +77,3 @@ export function composeDetailedRowRatePrompt(
   return prompt;
 }
 
-// Legacy functions (kept for backward compatibility, can be removed later)

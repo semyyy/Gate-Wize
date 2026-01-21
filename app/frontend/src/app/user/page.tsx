@@ -39,18 +39,18 @@ export default function UserPage() {
     if (!currentId && forms.length > 0) setCurrentId(forms[0].id);
   }, [forms, currentId]);
 
-  // Load persisted data and ratings when switching forms
+  // Load persisted data when switching forms (Ratings are NOT persisted)
   useEffect(() => {
     if (currentId) {
       const persisted = loadFormData(currentId);
-      const persistedRatings = loadRatings(currentId);
       setValue(persisted);
-      setRatings(persistedRatings);
+      // specific requirement: do not load persisted ratings
+      setRatings({});
     } else {
       setValue({});
       setRatings({});
     }
-  }, [currentId, loadFormData, loadRatings]);
+  }, [currentId, loadFormData]);
 
   useEffect(() => {
     (async () => {
@@ -77,19 +77,30 @@ export default function UserPage() {
     setClearDialogOpen(false);
   };
 
-  const handleRatingChange = (path: string, rating: { comment: string; rate?: 'invalid' | 'partial' | 'valid' } | null) => {
-    if (!rating || !currentId) return;
+  const handleRatingChange = (path: string, rating: { comment: string; rate?: 'invalid' | 'partial' | 'valid'; suggestionResponse?: string } | null) => {
+    if (!currentId) return;
+
+    if (!rating) {
+      const updatedRatings = { ...ratings };
+      delete updatedRatings[path];
+
+      setRatings(updatedRatings);
+      // saveRatings(currentId, updatedRatings); // Disabled persistence
+      triggerSaveStatus();
+      return;
+    }
 
     const updatedRatings = {
       ...ratings,
       [path]: {
         comment: rating.comment,
         rate: rating.rate || 'partial',
+        ...(rating.suggestionResponse && { suggestionResponse: rating.suggestionResponse }),
       },
     };
 
     setRatings(updatedRatings);
-    saveRatings(currentId, updatedRatings);
+    // saveRatings(currentId, updatedRatings); // Disabled persistence
     triggerSaveStatus();
   };
 
