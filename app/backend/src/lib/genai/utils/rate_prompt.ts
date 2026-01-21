@@ -78,28 +78,3 @@ export function composeDetailedRowRatePrompt(
 }
 
 // Legacy functions (kept for backward compatibility, can be removed later)
-export function loadFieldRateTemplate(): FieldRateTemplate {
-  return loadTemplate('rate_field.yaml');
-}
-
-export function composeFieldRatePrompt(
-  tpl: FieldRateTemplate,
-  vars: { question: string; value: string; examples: string; questionText: string; rowContext: string }
-): string {
-  let prompt = '';
-  prompt += `Task:\n${tpl.task}\n\n`;
-  prompt += `Role:\n${tpl.role}\n\n`;
-
-  let context = tpl.context;
-  context = context.replace('{{question}}', vars.question);
-  context = context.replace('{{value}}', vars.value);
-  context = context.replace('{{examples}}', vars.examples);
-  context = context.replace('{{questionText}}', vars.questionText);
-  context = context.replace('{{rowContext}}', vars.rowContext);
-  prompt += `Context:\n${context}\n\n`;
-
-  prompt += `Guidelines:\n${tpl.guidelines}\n\n`;
-  prompt += `Final Instruction:\n${tpl.final_instruction}\n`;
-
-  return prompt;
-}

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { SimpleQuestion } from '../types';
-import { rateSimpleField, type FieldRatingResult } from '@/lib/formApi';
+import { rateSimpleField, isFieldRatingError, type FieldRatingResult } from '@/lib/formApi';
 import { getInputStyles, StatusIcon, type FieldRating } from '../ratings/FieldRating';
 import { Plus, X } from 'lucide-react';
 
@@ -18,6 +18,7 @@ interface ResponseItem {
 export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, rating, ratings, jsonPath }: { q: SimpleQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; rating?: FieldRating; ratings?: Record<string, FieldRating>; jsonPath: string }) {
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [errorIds, setErrorIds] = useState<Map<string, string>>(new Map());
   const lastEvaluatedValuesRef = useRef<Map<string, string>>(new Map());
 
   // Track response items with stable IDs
@@ -128,12 +129,25 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
 
     console.log('[SimpleQuestion] Starting rating for id', id);
     setLoadingIds(prev => new Set(prev).add(id));
+    // Clear any previous error for this field
+    setErrorIds(prev => {
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
 
     try {
       const ratingResult = await rateSimpleField(q.question, responseValue, q.examples, q.promptConfig);
       console.log('[SimpleQuestion] Rating result:', ratingResult);
 
-      if (ratingResult) {
+      if (isFieldRatingError(ratingResult)) {
+        // Handle error response
+        setErrorIds(prev => {
+          const next = new Map(prev);
+          next.set(id, ratingResult.message);
+          return next;
+        });
+      } else if (ratingResult) {
         lastEvaluatedValuesRef.current.set(id, responseValue);
         // For multiple responses, use ID-based path; for single, use base path
         const fieldPath = isMultiple ? `${path}[${id}]` : path;
@@ -141,6 +155,11 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
       }
     } catch (error) {
       console.error('[SimpleQuestion] Rating error:', error);
+      setErrorIds(prev => {
+        const next = new Map(prev);
+        next.set(id, 'An unexpected error occurred during validation');
+        return next;
+      });
     } finally {
       // Always clear loading state, even if there's an error
       setLoadingIds(prev => {
@@ -188,6 +207,7 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
         {responseItems.map((item) => {
           const fieldRating = getFieldRating(item.id);
           const isLoading = loadingIds.has(item.id);
+          const errorMessage = errorIds.get(item.id);
 
           return (
             <div key={item.id} className="space-y-2">
@@ -223,7 +243,20 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
                 </div>
               </div>
 
-              {fieldRating && (
+              {errorMessage && (
+                <div
+                  className={`py-2 ${isMultiple && responseItems.length > 1 ? 'ml-8' : ''} animate-in fade-in slide-in-from-top-2 duration-700 ease-out text-orange-600 bg-orange-50 rounded-md px-3`}
+                >
+                  <div className="text-sm leading-relaxed flex items-center gap-2">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    {errorMessage}
+                  </div>
+                </div>
+              )}
+
+              {fieldRating && !errorMessage && (
                 <div
                   className={`py-2 ${isMultiple && responseItems.length > 1 ? 'ml-8' : ''} animate-in fade-in slide-in-from-top-2 duration-700 ease-out ${fieldRating.rate === 'valid'
                     ? 'text-emerald-600'
@@ -245,10 +278,9 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
           <button
             type="button"
             onClick={handleAddResponse}
-            className="group w-full py-3 px-4 border-2 border-dashed border-slate-300 rounded-md hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 hover:text-blue-600"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-md transition-colors"
           >
-            <Plus className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-            <span className="font-medium">Add another response</span>
+            <span className="text-lg leading-none">+</span> Add another response
           </button>
         )}
       </div>

@@ -67,25 +67,36 @@ export async function rateForm(spec: unknown, value: Record<string, unknown>): P
 }
 
 export type FieldRatingResult = { comment: string; rate?: 'invalid' | 'partial' | 'valid' };
+export type FieldRatingError = { error: true; message: string };
+export type FieldRatingResponse = FieldRatingResult | FieldRatingError | null;
+
+export function isFieldRatingError(response: FieldRatingResponse): response is FieldRatingError {
+  return response !== null && 'error' in response && response.error === true;
+}
 
 export async function rateSimpleField(
   question: string,
   value: string,
   examples?: string[],
   promptConfig?: { task?: string; role?: string; guidelines?: string }
-): Promise<FieldRatingResult | null> {
+): Promise<FieldRatingResponse> {
   try {
     const r = await fetch(`${API_BASE}/api/llm/rate-simple-field`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, value, examples, promptConfig }),
     });
-    if (!r.ok) return null;
+    if (!r.ok) {
+      const errorText = await r.text().catch(() => '');
+      console.error('Simple field rating HTTP error:', r.status, errorText);
+      return { error: true, message: `Validation service unavailable , try again later.` };
+    }
     const j = await r.json();
     return (j?.data as FieldRatingResult) ?? null;
   } catch (e) {
     console.error('Simple field rating error:', e);
-    return null;
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    return { error: true, message: `Validation failed: ${message}` };
   }
 }
 
@@ -96,19 +107,24 @@ export async function rateDetailedRow(
   rowData: Record<string, unknown>,
   examples?: string[],
   promptConfig?: { task?: string; role?: string; guidelines?: string }
-): Promise<FieldRatingResult | null> {
+): Promise<FieldRatingResponse> {
   try {
     const r = await fetch(`${API_BASE}/api/llm/rate-detailed-row`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, attributeName, attributeValue, rowData, examples, promptConfig }),
     });
-    if (!r.ok) return null;
+    if (!r.ok) {
+      const errorText = await r.text().catch(() => '');
+      console.error('Detailed row rating HTTP error:', r.status, errorText);
+      return { error: true, message: `Validation service unavailable , try again later.` };
+    }
     const j = await r.json();
     return (j?.data as FieldRatingResult) ?? null;
   } catch (e) {
     console.error('Detailed row rating error:', e);
-    return null;
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    return { error: true, message: `Validation failed: ${message}` };
   }
 }
 
@@ -143,15 +159,7 @@ export async function exportFormToPdf(
       document.body.removeChild(a);
     }, 5000);
 
-<<<<<<< HEAD
-    // Cleanup - Delayed for Safari support
-    // Safari requires the Blob URL to remain valid for a moment to initiate download
-    setTimeout(() => {
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }, 5000);
-=======
->>>>>>> 465cc823ae28e1b429666d300246f690a358e99e
+
   } catch (e) {
     console.error('PDF export error:', e);
     throw e;

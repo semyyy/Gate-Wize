@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DetailedQuestion } from '../types';
-import { rateDetailedRow, type FieldRatingResult } from '@/lib/formApi';
+import { rateDetailedRow, isFieldRatingError, type FieldRatingResult } from '@/lib/formApi';
 import { getInputStyles, StatusIcon, ValidationMessage, type FieldRating } from '../ratings/FieldRating';
 
 export function DetailedQuestionView({ q, path, value, onChange, onRatingChange, ratings, jsonPath }: { q: DetailedQuestion; path: string; value: Record<string, unknown>; onChange: (v: unknown) => void; onRatingChange?: (path: string, rating: FieldRatingResult | null) => void; ratings?: Record<string, FieldRating>; jsonPath: string }) {
@@ -21,6 +21,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
   const rows = realRows.length > 0 ? realRows : [createEmptyRow()];
 
   const [ratingStates, setRatingStates] = useState<Record<string, boolean>>({});
+  const [errorStates, setErrorStates] = useState<Record<string, string>>({});
   const lastEvaluatedValuesRef = useRef<Record<string, string>>({});
 
   const addRow = () => {
@@ -86,6 +87,11 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
 
     const ratingKey = `${path}.${ri}.${attrName}`;
     setRatingStates(prev => ({ ...prev, [ratingKey]: true }));
+    // Clear any previous error for this field
+    setErrorStates(prev => {
+      const { [ratingKey]: _, ...rest } = prev;
+      return rest;
+    });
 
     const currentRow = rows[ri] || {};
 
@@ -99,10 +105,16 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
         promptConfig
       );
 
-      if (rating) {
+      if (isFieldRatingError(rating)) {
+        // Handle error response
+        setErrorStates(prev => ({ ...prev, [ratingKey]: rating.message }));
+      } else if (rating) {
         lastEvaluatedValuesRef.current[ratingKey] = currentValue;
         onRatingChange(ratingKey, rating);
       }
+    } catch (error) {
+      console.error('[DetailedQuestion] Rating error:', error);
+      setErrorStates(prev => ({ ...prev, [ratingKey]: 'An unexpected error occurred during validation' }));
     } finally {
       setRatingStates(prev => ({ ...prev, [ratingKey]: false }));
       processNext(ri);
@@ -187,9 +199,10 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                   return {
                     attributeName: a.name,
                     rating: ratings?.[ratingKey],
+                    errorMessage: errorStates[ratingKey],
                   };
                 })
-                .filter((r) => r.rating !== undefined);
+                .filter((r) => r.rating !== undefined || r.errorMessage);
 
               return (
                 <>
@@ -261,7 +274,27 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                     <tr key={`${ri}-ratings`}>
                       <td colSpan={q.attributes.length + 1} className="border-b border-slate-200 bg-slate-50/50 p-3">
                         <div className="space-y-2">
-                          {rowRatings.map(({ attributeName, rating }) => {
+                          {rowRatings.map(({ attributeName, rating, errorMessage }) => {
+                            if (errorMessage) {
+                              return (
+                                <div
+                                  key={attributeName}
+                                  className="py-2 animate-in fade-in slide-in-from-top-2 duration-700 ease-out text-orange-600 bg-orange-50 rounded-md px-3"
+                                >
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <span className="font-semibold text-xs uppercase tracking-wide opacity-90">
+                                      {attributeName}
+                                    </span>
+                                  </div>
+                                  <div className="text-sm leading-relaxed">
+                                    {errorMessage}
+                                  </div>
+                                </div>
+                              );
+                            }
                             if (!rating) return null;
                             const textColor = rating.rate === 'valid'
                               ? 'text-emerald-600'
