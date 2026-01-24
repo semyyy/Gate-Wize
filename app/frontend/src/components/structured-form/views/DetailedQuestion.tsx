@@ -266,15 +266,13 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
               const rowRatings = q.attributes
                 .map((a) => {
                   const ratingKey = `${path}.${ri}.${a.name}`;
-                  const undoKey = `${ri}.${a.name}`;
                   return {
                     attributeName: a.name,
                     rating: ratings?.[ratingKey],
                     errorMessage: errorStates[ratingKey],
-                    hasUndo: undoState[undoKey] !== undefined
                   };
                 })
-                .filter((r) => r.rating !== undefined || r.errorMessage || r.hasUndo);
+                .filter((r) => r.rating !== undefined || r.errorMessage);
 
               return (
                 <>
