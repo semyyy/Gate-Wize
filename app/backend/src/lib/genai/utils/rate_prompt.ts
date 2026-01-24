@@ -34,8 +34,8 @@ export function composeSimpleFieldRatePrompt(
   customPrompt?: { task?: string; role?: string; guidelines?: string }
 ): string {
   let prompt = '';
-  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
   prompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
+  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
 
   let context = tpl.context;
   context = context.replace('{{question}}', vars.question);
@@ -60,8 +60,8 @@ export function composeDetailedRowRatePrompt(
   customPrompt?: { task?: string; role?: string; guidelines?: string }
 ): string {
   let prompt = '';
-  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
   prompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
+  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
 
   let context = tpl.context;
   context = context.replace('{{question}}', vars.question);

@@ -409,7 +409,7 @@ export default function AdminPage() {
   }, [spec, parseErrors, validationErrors]);
 
   // We need to import FieldRating from where it's defined or redefine it compatible
-  type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string };
+  type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string; suggestionResponse?: string };
   const [previewValue, setPreviewValue] = useState<Record<string, unknown>>({});
   const [previewRatings, setPreviewRatings] = useState<Record<string, FieldRating>>({});
 
@@ -463,7 +463,8 @@ export default function AdminPage() {
     }
     const normalized: FieldRating = {
       comment: rating.comment,
-      rate: rating.rate || 'partial'
+      rate: rating.rate || 'partial',
+      ...(rating.suggestionResponse && { suggestionResponse: rating.suggestionResponse })
     };
     setPreviewRatings(prev => ({ ...prev, [path]: normalized }));
   };
