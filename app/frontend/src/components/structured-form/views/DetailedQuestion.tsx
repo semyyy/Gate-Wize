@@ -157,6 +157,10 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
 
     const ratingKey = `${path}.${ri}.${attrName}`;
     setRatingStates(prev => ({ ...prev, [ratingKey]: true }));
+
+    // Clear the old validation immediately when starting a new request
+    onRatingChange(ratingKey, null);
+
     // Clear any previous error for this field
     setErrorStates(prev => {
       const { [ratingKey]: _, ...rest } = prev;
@@ -229,8 +233,8 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
         ) : null}
       </div>
 
-      <div className="w-full">
-        <table className="w-full border-collapse text-sm table-fixed">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full border-collapse text-sm table-fixed min-w-[600px]">
           <thead>
             <tr>
               {q.attributes.map((a, i) => {
@@ -257,7 +261,7 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                   </th>
                 );
               })}
-              <th className="w-px"></th>
+              <th className="w-16 border-b border-slate-200"></th>
             </tr>
           </thead>
           <tbody>
@@ -354,17 +358,19 @@ export function DetailedQuestionView({ q, path, value, onChange, onRatingChange,
                         </td>
                       );
                     })}
-                    <td className="border-b border-slate-200 p-2 align-top">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="h-12 w-12 p-0 text-slate-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:bg-transparent"
-                        onClick={() => removeRow(ri)}
-                        disabled={rows.length <= 1}
-                        title={rows.length <= 1 ? "Cannot delete the last row" : "Delete row"}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                      </Button>
+                    <td className="border-b border-slate-200 p-2 align-top w-16">
+                      <div className="flex items-center justify-center">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="h-10 w-10 p-0 text-slate-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:bg-transparent"
+                          onClick={() => removeRow(ri)}
+                          disabled={rows.length <= 1}
+                          title={rows.length <= 1 ? "Cannot delete the last row" : "Delete row"}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                   {rowRatings.length > 0 && (

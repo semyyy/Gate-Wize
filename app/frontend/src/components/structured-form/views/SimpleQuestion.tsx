@@ -130,6 +130,11 @@ export function SimpleQuestionView({ q, path, value, onChange, onRatingChange, r
 
     console.log('[SimpleQuestion] Starting rating for id', id);
     setLoadingIds(prev => new Set(prev).add(id));
+
+    // Clear the old validation immediately when starting a new request
+    const fieldPath = isMultiple ? `${path}[${id}]` : path;
+    onRatingChange(fieldPath, null);
+
     // Clear any previous error for this field
     setErrorIds(prev => {
       const next = new Map(prev);
