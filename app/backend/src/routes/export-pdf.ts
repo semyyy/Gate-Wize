@@ -24,7 +24,7 @@
  */
 
 import { Router } from 'express';
-import { generatePdf, type ExportPdfRequest } from '../lib/pdf/pdfService';
+import { generatePdf, type ExportPdfRequest } from '../lib/pdf/pdfService.js';
 
 const router = Router();
 

@@ -24,9 +24,9 @@
  */
 
 import { Router } from 'express';
-import { LLMClient } from '../lib/genai/llmClient';
-import { buildFieldRatingSchema } from '../lib/genai/utils/schema_preparation';
-import { loadDetailedRowRateTemplate, composeDetailedRowRatePrompt } from '../lib/genai/utils/rate_prompt';
+import { LLMClient } from '../lib/genai/llmClient.js';
+import { buildFieldRatingSchema } from '../lib/genai/utils/schema_preparation.js';
+import { loadDetailedRowRateTemplate, composeDetailedRowRatePrompt } from '../lib/genai/utils/rate_prompt.js';
 
 const router = Router();
 

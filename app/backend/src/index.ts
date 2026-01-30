@@ -26,10 +26,10 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import formRouter from './routes/form';
-import rateSimpleFieldRouter from './routes/rate-simple-field';
-import rateDetailedRowRouter from './routes/rate-detailed-row';
-import exportPdfRouter from './routes/export-pdf';
+import formRouter from './routes/form.js';
+import rateSimpleFieldRouter from './routes/rate-simple-field.js';
+import rateDetailedRowRouter from './routes/rate-detailed-row.js';
+import exportPdfRouter from './routes/export-pdf.js';
 
 
 const app = express();

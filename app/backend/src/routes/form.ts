@@ -24,7 +24,7 @@
  */
 
 import { Router } from 'express';
-import { saveForm, loadForm, listForms, deleteForm, formExists } from '../lib/data/services/formService';
+import { saveForm, loadForm, listForms, deleteForm, formExists } from '../lib/data/services/formService.js';
 
 const router = Router();
 

@@ -23,8 +23,8 @@
  * SOFTWARE.
  */
 
-import { putJSON, getJSON } from '../minioClient';
-import { client as minioClient, ensureBucket } from '../minioClient';
+import { putJSON, getJSON } from '../minioClient.js';
+import { client as minioClient, ensureBucket } from '../minioClient.js';
 
 const BUCKET = process.env.MINIO_BUCKET ?? 'forms';
 
