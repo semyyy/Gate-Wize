@@ -22,7 +22,6 @@ context: |
       {{examples}}
 
 guidelines: |
-  {{instrctions}}
   - Ratings: |
     - valid: The response answers all parts of the question. |
     - partial: The response answers at least one part of the question but does not answer all required parts. |
