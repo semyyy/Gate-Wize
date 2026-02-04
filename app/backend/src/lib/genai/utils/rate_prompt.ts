@@ -48,63 +48,69 @@ function loadTemplate(filename: string): FieldRateTemplate {
   return doc as FieldRateTemplate;
 }
 
-// Simple field rating
+// ============================================================================
+// System Prompt Creation
+// ============================================================================
+
+/**
+ * Creates a system prompt from a template with optional custom overrides.
+ * The system prompt includes role, task, guidelines, and final instructions.
+ */
+export function createSystemPrompt(
+  tpl: FieldRateTemplate,
+  customPrompt?: { task?: string; role?: string; guidelines?: string }
+): string {
+  let systemPrompt = '';
+  systemPrompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
+  systemPrompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
+  systemPrompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
+  systemPrompt += `Final Instruction:\n${tpl.final_instruction}`;
+  return systemPrompt;
+}
+
+// ============================================================================
+// Simple Field Rating
+// ============================================================================
+
 export function loadSimpleFieldRateTemplate(): FieldRateTemplate {
   return loadTemplate('rate_simple_field.yaml');
 }
 
-export function composeSimpleFieldRatePrompt(
+/**
+ * Creates a user prompt for simple field rating by replacing template variables.
+ */
+export function createSimpleFieldUserPrompt(
   tpl: FieldRateTemplate,
-  vars: { question: string; value: string; examples: string },
-  customPrompt?: { task?: string; role?: string; guidelines?: string }
-): { systemPrompt: string; userPrompt: string } {
-  // Build system prompt with role, task, guidelines, and final instructions
-  let systemPrompt = '';
-  systemPrompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
-  systemPrompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
-  systemPrompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
-  systemPrompt += `Final Instruction:\n${tpl.final_instruction}`;
-
-  // Build user prompt with the input context
+  vars: { question: string; value: string; examples: string }
+): string {
   let input = tpl.context;
   input = input.replace('{{question}}', vars.question);
   input = input.replace('{{value}}', vars.value);
   input = input.replace('{{examples}}', vars.examples);
-
-  return {
-    systemPrompt,
-    userPrompt: input
-  };
+  return input;
 }
 
-// Detailed row rating
+// ============================================================================
+// Detailed Row Rating
+// ============================================================================
+
 export function loadDetailedRowRateTemplate(): FieldRateTemplate {
   return loadTemplate('rate_detailed_row.yaml');
 }
 
-export function composeDetailedRowRatePrompt(
+/**
+ * Creates a user prompt for detailed row rating by replacing template variables.
+ */
+export function createDetailedRowUserPrompt(
   tpl: FieldRateTemplate,
-  vars: { question: string; attributeName: string; attributeValue: string; rowData: string; examples: string },
-  customPrompt?: { task?: string; role?: string; guidelines?: string }
-): { systemPrompt: string; userPrompt: string } {
-  // Build system prompt with role, task, guidelines, and final instructions
-  let systemPrompt = '';
-  systemPrompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
-  systemPrompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
-  systemPrompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
-  systemPrompt += `Final Instruction:\n${tpl.final_instruction}`;
-
-  // Build user prompt with the input context
+  vars: { question: string; attributeName: string; attributeValue: string; rowData: string; examples: string }
+): string {
   let input = tpl.context;
   input = input.replace('{{question}}', vars.question);
   input = input.replace('{{attributeName}}', vars.attributeName);
   input = input.replace('{{attributeValue}}', vars.attributeValue);
   input = input.replace('{{rowData}}', vars.rowData);
   input = input.replace('{{examples}}', vars.examples);
-
-  return {
-    systemPrompt,
-    userPrompt: input
-  };
+  return input;
 }
 

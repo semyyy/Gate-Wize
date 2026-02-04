@@ -26,7 +26,7 @@
 import { Router } from 'express';
 import { LLMClient } from '../lib/genai/llmClient.js';
 import { buildFieldRatingSchema } from '../lib/genai/utils/schema_preparation.js';
-import { loadDetailedRowRateTemplate, composeDetailedRowRatePrompt } from '../lib/genai/utils/rate_prompt.js';
+import { loadDetailedRowRateTemplate, createSystemPrompt, createDetailedRowUserPrompt } from '../lib/genai/utils/rate_prompt.js';
 
 const router = Router();
 
@@ -63,13 +63,15 @@ router.post('/rate-detailed-row', async (req, res) => {
                 .join('\n')
             : 'No additional row data.';
 
-        const { systemPrompt, userPrompt } = composeDetailedRowRatePrompt(tpl, {
+        // Create system and user prompts separately
+        const systemPrompt = createSystemPrompt(tpl, promptConfig);
+        const userPrompt = createDetailedRowUserPrompt(tpl, {
             question,
             attributeName,
             attributeValue,
             rowData: rowDataStr,
             examples: examplesStr,
-        }, promptConfig);
+        });
 
         const schema = buildFieldRatingSchema();
         const result = await llm.generateStructured({

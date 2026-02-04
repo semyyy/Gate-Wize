@@ -26,7 +26,7 @@
 import { Router } from 'express';
 import { LLMClient } from '../lib/genai/llmClient.js';
 import { buildFieldRatingSchema } from '../lib/genai/utils/schema_preparation.js';
-import { loadSimpleFieldRateTemplate, composeSimpleFieldRatePrompt } from '../lib/genai/utils/rate_prompt.js';
+import { loadSimpleFieldRateTemplate, createSystemPrompt, createSimpleFieldUserPrompt } from '../lib/genai/utils/rate_prompt.js';
 
 const router = Router();
 
@@ -51,11 +51,13 @@ router.post('/rate-simple-field', async (req, res) => {
             ? examples.map((ex, i) => `${i + 1}. ${ex}`).join('\n')
             : 'No examples provided.';
 
-        const { systemPrompt, userPrompt } = composeSimpleFieldRatePrompt(tpl, {
+        // Create system and user prompts separately
+        const systemPrompt = createSystemPrompt(tpl, promptConfig);
+        const userPrompt = createSimpleFieldUserPrompt(tpl, {
             question,
             value,
             examples: examplesStr,
-        }, promptConfig);
+        });
 
         const schema = buildFieldRatingSchema();
         const result = await llm.generateStructured({
