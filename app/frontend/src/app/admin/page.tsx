@@ -1,6 +1,31 @@
+/**
+ * Copyright (c) 2026 EAExpertise
+ *
+ * This software is licensed under the MIT License with Commons Clause.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to use,
+ * copy, modify, merge, publish, distribute, and sublicense the Software,
+ * subject to the conditions of the MIT License and the Commons Clause.
+ *
+ * Commercial use of this Software is strictly prohibited unless explicit prior
+ * written permission is obtained from EAExpertise.
+ *
+ * The Software may be used for internal business purposes, research,
+ * evaluation, or other non-commercial purposes.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { StructuredForm } from '@/components/structured-form/StructuredForm';
 import { JsonEditor, type JsonEditorError } from '@/components/json/JsonEditor';
 import { parse, parseTree, getLocation, findNodeAtLocation, printParseErrorCode, type ParseError } from 'jsonc-parser';
@@ -337,7 +362,7 @@ export default function AdminPage() {
   };
 
   // Sync form in the forms list after save (add if new, update if exists)
-  const syncFormStatus = (formName: string, status: 'draft' | 'published') => {
+  const syncFormStatus = useCallback((formName: string, status: 'draft' | 'published') => {
     const formId = formIdFromName(formName);
     setForms(prevForms => {
       const existingIndex = prevForms.findIndex(f => f.id === formId);
@@ -351,7 +376,7 @@ export default function AdminPage() {
         return [...prevForms, { id: formId, name: formName, status }];
       }
     });
-  };
+  }, [setForms]);
 
   // No selection: optional load by typing an id in name and clicking Load button could be added later
   // First save with optional override confirm; afterward, autosave
@@ -406,7 +431,7 @@ export default function AdminPage() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [spec, parseErrors, validationErrors]);
+  }, [spec, parseErrors, validationErrors, firstSavedId, syncFormStatus]);
 
   // We need to import FieldRating from where it's defined or redefine it compatible
   type FieldRating = { rate: 'invalid' | 'partial' | 'valid'; comment: string; suggestionResponse?: string };
@@ -751,7 +776,7 @@ export default function AdminPage() {
                   ))}
                 </ul>
                 <div className="mt-3 text-xs text-amber-600 bg-amber-100 p-2 rounded">
-                  💡 <strong>Tip:</strong> Make sure all required fields are present and question types are valid ('simple', 'option', 'detailed', or 'image').
+                  💡 <strong>Tip:</strong> Make sure all required fields are present and question types are valid (&apos;simple&apos;, &apos;option&apos;, &apos;detailed&apos;, or &apos;image&apos;).
                 </div>
               </div>
             </div>
