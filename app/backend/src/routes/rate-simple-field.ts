@@ -26,14 +26,18 @@ router.post('/rate-simple-field', async (req, res) => {
             ? examples.map((ex, i) => `${i + 1}. ${ex}`).join('\n')
             : 'No examples provided.';
 
-        const prompt = composeSimpleFieldRatePrompt(tpl, {
+        const { systemPrompt, userPrompt } = composeSimpleFieldRatePrompt(tpl, {
             question,
             value,
             examples: examplesStr,
         }, promptConfig);
 
         const schema = buildFieldRatingSchema();
-        const result = await llm.generateStructured({ prompt, schema });
+        const result = await llm.generateStructured({
+            systemPrompt,
+            userPrompt,
+            schema
+        });
 
         // Only include suggestionResponse when rate is partial or invalid
         const response = { ...result };

@@ -38,7 +38,7 @@ router.post('/rate-detailed-row', async (req, res) => {
                 .join('\n')
             : 'No additional row data.';
 
-        const prompt = composeDetailedRowRatePrompt(tpl, {
+        const { systemPrompt, userPrompt } = composeDetailedRowRatePrompt(tpl, {
             question,
             attributeName,
             attributeValue,
@@ -47,7 +47,11 @@ router.post('/rate-detailed-row', async (req, res) => {
         }, promptConfig);
 
         const schema = buildFieldRatingSchema();
-        const result = await llm.generateStructured({ prompt, schema });
+        const result = await llm.generateStructured({
+            systemPrompt,
+            userPrompt,
+            schema
+        });
 
         // Only include suggestionResponse when rate is partial or invalid
         const response = { ...result };

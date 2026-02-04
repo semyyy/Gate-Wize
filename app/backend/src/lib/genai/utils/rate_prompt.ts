@@ -32,21 +32,24 @@ export function composeSimpleFieldRatePrompt(
   tpl: FieldRateTemplate,
   vars: { question: string; value: string; examples: string },
   customPrompt?: { task?: string; role?: string; guidelines?: string }
-): string {
-  let prompt = '';
-  prompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
-  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
+): { systemPrompt: string; userPrompt: string } {
+  // Build system prompt with role, task, guidelines, and final instructions
+  let systemPrompt = '';
+  systemPrompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
+  systemPrompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
+  systemPrompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
+  systemPrompt += `Final Instruction:\n${tpl.final_instruction}`;
 
-  let context = tpl.context;
-  context = context.replace('{{question}}', vars.question);
-  context = context.replace('{{value}}', vars.value);
-  context = context.replace('{{examples}}', vars.examples);
-  prompt += `Context:\n${context}\n\n`;
+  // Build user prompt with the input context
+  let input = tpl.context;
+  input = input.replace('{{question}}', vars.question);
+  input = input.replace('{{value}}', vars.value);
+  input = input.replace('{{examples}}', vars.examples);
 
-  prompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
-  prompt += `Final Instruction:\n${tpl.final_instruction}\n`;
-
-  return prompt;
+  return {
+    systemPrompt,
+    userPrompt: input
+  };
 }
 
 // Detailed row rating
@@ -58,22 +61,25 @@ export function composeDetailedRowRatePrompt(
   tpl: FieldRateTemplate,
   vars: { question: string; attributeName: string; attributeValue: string; rowData: string; examples: string },
   customPrompt?: { task?: string; role?: string; guidelines?: string }
-): string {
-  let prompt = '';
-  prompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
-  prompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
+): { systemPrompt: string; userPrompt: string } {
+  // Build system prompt with role, task, guidelines, and final instructions
+  let systemPrompt = '';
+  systemPrompt += `Role:\n${customPrompt?.role || tpl.role}\n\n`;
+  systemPrompt += `Task:\n${customPrompt?.task || tpl.task}\n\n`;
+  systemPrompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
+  systemPrompt += `Final Instruction:\n${tpl.final_instruction}`;
 
-  let context = tpl.context;
-  context = context.replace('{{question}}', vars.question);
-  context = context.replace('{{attributeName}}', vars.attributeName);
-  context = context.replace('{{attributeValue}}', vars.attributeValue);
-  context = context.replace('{{rowData}}', vars.rowData);
-  context = context.replace('{{examples}}', vars.examples);
-  prompt += `Context:\n${context}\n\n`;
+  // Build user prompt with the input context
+  let input = tpl.context;
+  input = input.replace('{{question}}', vars.question);
+  input = input.replace('{{attributeName}}', vars.attributeName);
+  input = input.replace('{{attributeValue}}', vars.attributeValue);
+  input = input.replace('{{rowData}}', vars.rowData);
+  input = input.replace('{{examples}}', vars.examples);
 
-  prompt += `Guidelines:\n${customPrompt?.guidelines || tpl.guidelines}\n\n`;
-  prompt += `Final Instruction:\n${tpl.final_instruction}\n`;
-
-  return prompt;
+  return {
+    systemPrompt,
+    userPrompt: input
+  };
 }
 
