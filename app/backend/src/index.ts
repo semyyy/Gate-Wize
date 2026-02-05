@@ -30,6 +30,7 @@ import formRouter from './routes/form.js';
 import rateSimpleFieldRouter from './routes/rate-simple-field.js';
 import rateDetailedRowRouter from './routes/rate-detailed-row.js';
 import exportPdfRouter from './routes/export-pdf.js';
+import { errorLogger, errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 
 const app = express();
@@ -46,6 +47,11 @@ app.use('/api/form', formRouter);
 app.use('/api/form', exportPdfRouter);
 app.use('/api/llm', rateSimpleFieldRouter);
 app.use('/api/llm', rateDetailedRowRouter);
+
+// Error handling middleware (must be after all routes)
+app.use(notFoundHandler);
+app.use(errorLogger);
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`[backend] listening on http://localhost:${port}`);

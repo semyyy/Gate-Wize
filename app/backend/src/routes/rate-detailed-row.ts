@@ -27,24 +27,25 @@ import { Router } from 'express';
 import { LLMClient } from '../lib/genai/llmClient.js';
 import { buildFieldRatingSchema } from '../lib/genai/utils/schema_preparation.js';
 import { loadDetailedRowRateTemplate, createSystemPrompt, createDetailedRowUserPrompt } from '../lib/genai/utils/rate_prompt.js';
+import { ValidationError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
-router.post('/rate-detailed-row', async (req, res) => {
+router.post('/rate-detailed-row', async (req, res, next) => {
     try {
         const { question, attributeName, attributeValue, rowData, examples, promptConfig } = req.body ?? {};
 
         // Validate inputs
         if (!question || typeof question !== 'string') {
-            return res.status(400).json({ ok: false, error: 'Missing or invalid question' });
+            throw new ValidationError('Missing or invalid question');
         }
 
         if (!attributeName || typeof attributeName !== 'string') {
-            return res.status(400).json({ ok: false, error: 'Missing or invalid attributeName' });
+            throw new ValidationError('Missing or invalid attributeName');
         }
 
         if (!attributeValue || typeof attributeValue !== 'string' || attributeValue.trim().length === 0) {
-            return res.status(400).json({ ok: false, error: 'Missing or empty attributeValue' });
+            throw new ValidationError('Missing or empty attributeValue');
         }
 
         const llm = new LLMClient();
@@ -88,8 +89,7 @@ router.post('/rate-detailed-row', async (req, res) => {
 
         res.json({ ok: true, data: response });
     } catch (e) {
-        console.error('Detailed row rating error:', e);
-        res.status(500).json({ ok: false, error: 'Internal server error' });
+        next(e);
     }
 });
 

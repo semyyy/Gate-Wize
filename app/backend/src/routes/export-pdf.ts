@@ -25,19 +25,20 @@
 
 import { Router } from 'express';
 import { generatePdf, type ExportPdfRequest } from '../lib/pdf/pdfService.js';
+import { ValidationError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
-router.post('/export-pdf', async (req, res) => {
+router.post('/export-pdf', async (req, res, next) => {
     try {
         const { spec, value } = req.body as ExportPdfRequest;
 
         if (!spec || !spec.name) {
-            return res.status(400).json({ ok: false, error: 'Invalid form specification' });
+            throw new ValidationError('Invalid form specification');
         }
 
         if (!value || typeof value !== 'object') {
-            return res.status(400).json({ ok: false, error: 'Invalid form values' });
+            throw new ValidationError('Invalid form values');
         }
 
         console.log('Generating PDF for form:', spec.name);
@@ -52,8 +53,7 @@ router.post('/export-pdf', async (req, res) => {
 
         res.send(pdfBuffer);
     } catch (e) {
-        console.error('PDF generation error:', e);
-        res.status(500).json({ ok: false, error: 'Failed to generate PDF: ' + String(e) });
+        next(e);
     }
 });
 

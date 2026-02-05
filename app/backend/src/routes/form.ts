@@ -25,10 +25,11 @@
 
 import { Router } from 'express';
 import { saveForm, loadForm, listForms, deleteForm, formExists } from '../lib/data/services/formService.js';
+import { ValidationError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
-router.post('/save/', async (req, res) => {
+router.post('/save/', async (req, res, next) => {
   try {
     // accept { spec, name } or raw spec
     const body = req.body;
@@ -44,59 +45,55 @@ router.post('/save/', async (req, res) => {
       .replace(/\s+/g, '-')   // replace spaces with '-'
       .replace(/[^\w\-]/g, ''); // remove non-word characters except '-'
     if (!id || typeof id !== 'string') {
-      throw new Error('Invalid form name');
+      throw new ValidationError('Invalid form name');
     }
 
     await saveForm(id, spec);
     res.json({ ok: true });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false, error: String(e) });
+    next(e);
   }
 });
 
-router.get('/load/:id', async (req, res) => {
+router.get('/load/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
     const obj = await loadForm(id);
     res.json({ ok: true, data: obj });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false, error: String(e) });
+    next(e);
   }
 });
 
-router.get('/exists/:id', async (req, res) => {
+router.get('/exists/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
     const exists = await formExists(id);
     res.json({ ok: true, data: exists });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false, error: String(e) });
+    next(e);
   }
 });
 
-router.get('/list', async (req, res) => {
+router.get('/list', async (req, res, next) => {
   try {
     // Admin can request all forms including unpublished ones via ?includeUnpublished=true
     const includeUnpublished = req.query.includeUnpublished === 'true';
     const forms = await listForms(includeUnpublished);
     res.json({ ok: true, data: forms });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false, error: String(e) });
+    next(e);
   }
 });
 
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/delete/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
-    await deleteForm(id);
+    const awaitDeleteForm = deleteForm(id);
+    await awaitDeleteForm;
     res.json({ ok: true });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false, error: String(e) });
+    next(e);
   }
 });
 

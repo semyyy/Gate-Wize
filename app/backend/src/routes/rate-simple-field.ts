@@ -27,20 +27,21 @@ import { Router } from 'express';
 import { LLMClient } from '../lib/genai/llmClient.js';
 import { buildFieldRatingSchema } from '../lib/genai/utils/schema_preparation.js';
 import { loadSimpleFieldRateTemplate, createSystemPrompt, createSimpleFieldUserPrompt } from '../lib/genai/utils/rate_prompt.js';
+import { ValidationError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
-router.post('/rate-simple-field', async (req, res) => {
+router.post('/rate-simple-field', async (req, res, next) => {
     try {
         const { question, value, examples, promptConfig } = req.body ?? {};
 
         // Validate inputs
         if (!question || typeof question !== 'string') {
-            return res.status(400).json({ ok: false, error: 'Missing or invalid question' });
+            throw new ValidationError('Missing or invalid question');
         }
 
         if (!value || typeof value !== 'string' || value.trim().length === 0) {
-            return res.status(400).json({ ok: false, error: 'Missing or empty value' });
+            throw new ValidationError('Missing or empty value');
         }
 
         const llm = new LLMClient();
@@ -74,8 +75,7 @@ router.post('/rate-simple-field', async (req, res) => {
 
         res.json({ ok: true, data: response });
     } catch (e) {
-        console.error('Simple field rating error:', e);
-        res.status(500).json({ ok: false, error: 'Internal server error' });
+        next(e);
     }
 });
 
