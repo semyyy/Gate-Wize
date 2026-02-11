@@ -214,7 +214,7 @@ export default function AdminPage() {
   const [manageSelection, setManageSelection] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'single' | 'batch' | 'current'; id?: string } | null>(null);
-  const [text, setText] = useState<string>('');
+  const [text, setText] = useState<string>(JSON.stringify(default_form, null, 2));
   const [parseErrors, setParseErrors] = useState<JsonEditorError[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [spec, setSpec] = useState<FormSpec>(default_form); // last valid spec for preview
@@ -606,20 +606,7 @@ export default function AdminPage() {
             />
           </label>
 
-          <button
-            className="text-sm border border-gray-300 bg-white hover:bg-gray-50 rounded px-3 py-1.5 transition-colors"
-            title="Load the default template into the editor"
-            onClick={async () => {
-              const base = { ...default_form } as FormSpec;
-              setText(JSON.stringify(base, null, 2));
-              setSaveStatus('unsaved');
-              setFirstSavedId(null);
-              setSelectedFormId(undefined);
-              lastSavedRef.current = '';
-            }}
-          >
-            Use Template
-          </button>
+
         </div>
         <div className="flex gap-2">
           <Dialog open={isManageOpen} onOpenChange={setIsManageOpen}>
