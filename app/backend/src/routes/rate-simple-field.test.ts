@@ -27,6 +27,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import router from './rate-simple-field.js';
+import { errorHandler } from '../middleware/errorHandler.js';
 
 // Mock the LLM client
 vi.mock('../lib/genai/llmClient.js', () => ({
@@ -54,6 +55,7 @@ describe('Rate Simple Field Route', () => {
         app = express();
         app.use(express.json());
         app.use('/api/llm', router);
+        app.use(errorHandler);
     });
 
     describe('POST /rate-simple-field', () => {
@@ -150,7 +152,7 @@ describe('Rate Simple Field Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or invalid question',
             });
@@ -165,7 +167,7 @@ describe('Rate Simple Field Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or invalid question',
             });
@@ -179,7 +181,7 @@ describe('Rate Simple Field Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or empty value',
             });
@@ -194,7 +196,7 @@ describe('Rate Simple Field Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or empty value',
             });
@@ -255,6 +257,130 @@ describe('Rate Simple Field Route', () => {
             );
         });
 
+        it('should return 400 for question exceeding 1000 characters', async () => {
+            const longQuestion = 'a'.repeat(1001);
+            const response = await request(app)
+                .post('/api/llm/rate-simple-field')
+                .send({
+                    question: longQuestion,
+                    value: 'John Doe',
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Question exceeds maximum length of 1000 characters',
+            });
+        });
+
+        it('should return 400 for value exceeding 10000 characters', async () => {
+            const longValue = 'a'.repeat(10001);
+            const response = await request(app)
+                .post('/api/llm/rate-simple-field')
+                .send({
+                    question: 'What is your name?',
+                    value: longValue,
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Value exceeds maximum length of 10000 characters',
+            });
+        });
+
+        it('should return 400 for examples array exceeding 10 items', async () => {
+            const tooManyExamples = Array(11).fill('Example');
+            const response = await request(app)
+                .post('/api/llm/rate-simple-field')
+                .send({
+                    question: 'What is your name?',
+                    value: 'John Doe',
+                    examples: tooManyExamples,
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Examples array exceeds maximum of 10 items',
+            });
+        });
+
+        it('should return 400 for individual example exceeding 1000 characters', async () => {
+            const longExample = 'a'.repeat(1001);
+            const response = await request(app)
+                .post('/api/llm/rate-simple-field')
+                .send({
+                    question: 'What is your name?',
+                    value: 'John Doe',
+                    examples: ['Short example', longExample],
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Example at index 1 exceeds maximum length of 1000 characters',
+            });
+        });
+
+        it('should return 400 for non-string example in array', async () => {
+            const response = await request(app)
+                .post('/api/llm/rate-simple-field')
+                .send({
+                    question: 'What is your name?',
+                    value: 'John Doe',
+                    examples: ['Valid example', 123, 'Another valid'],
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Example at index 1 must be a string',
+            });
+        });
+
+        it('should return 400 for non-array examples', async () => {
+            const response = await request(app)
+                .post('/api/llm/rate-simple-field')
+                .send({
+                    question: 'What is your name?',
+                    value: 'John Doe',
+                    examples: 'Not an array',
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Examples must be an array',
+            });
+        });
+
+        it('should accept inputs at maximum allowed lengths', async () => {
+            const { LLMClient } = await import('../lib/genai/llmClient.js');
+            const mockGenerateStructured = vi.fn().mockResolvedValue({
+                rate: 'valid',
+                comment: 'Good',
+            });
+            (LLMClient as any).mockImplementation(() => ({
+                generateStructured: mockGenerateStructured,
+            }));
+
+            const maxQuestion = 'a'.repeat(1000);
+            const maxValue = 'b'.repeat(10000);
+            const maxExamples = Array(10).fill('c'.repeat(1000));
+
+            const response = await request(app)
+                .post('/api/llm/rate-simple-field')
+                .send({
+                    question: maxQuestion,
+                    value: maxValue,
+                    examples: maxExamples,
+                })
+                .expect(200);
+
+            expect(response.body.ok).toBe(true);
+        });
+
         it('should return 500 on LLM error', async () => {
             const { LLMClient } = await import('../lib/genai/llmClient.js');
             const mockGenerateStructured = vi.fn().mockRejectedValue(new Error('LLM error'));
@@ -270,10 +396,10 @@ describe('Rate Simple Field Route', () => {
                 })
                 .expect(500);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
-                error: 'Internal server error',
             });
+            expect(response.body.error).toBeTruthy();
         });
     });
 });

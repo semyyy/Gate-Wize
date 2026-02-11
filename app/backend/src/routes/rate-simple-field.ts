@@ -40,8 +40,36 @@ router.post('/rate-simple-field', async (req, res, next) => {
             throw new ValidationError('Missing or invalid question');
         }
 
+        if (question.length > 1000) {
+            throw new ValidationError('Question exceeds maximum length of 1000 characters');
+        }
+
         if (!value || typeof value !== 'string' || value.trim().length === 0) {
             throw new ValidationError('Missing or empty value');
+        }
+
+        if (value.length > 10000) {
+            throw new ValidationError('Value exceeds maximum length of 10000 characters');
+        }
+
+        // Validate examples array
+        if (examples !== undefined && examples !== null) {
+            if (!Array.isArray(examples)) {
+                throw new ValidationError('Examples must be an array');
+            }
+
+            if (examples.length > 10) {
+                throw new ValidationError('Examples array exceeds maximum of 10 items');
+            }
+
+            for (let i = 0; i < examples.length; i++) {
+                if (typeof examples[i] !== 'string') {
+                    throw new ValidationError(`Example at index ${i} must be a string`);
+                }
+                if (examples[i].length > 1000) {
+                    throw new ValidationError(`Example at index ${i} exceeds maximum length of 1000 characters`);
+                }
+            }
         }
 
         const llm = new LLMClient();

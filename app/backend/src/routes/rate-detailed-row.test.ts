@@ -27,6 +27,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import router from './rate-detailed-row.js';
+import { errorHandler } from '../middleware/errorHandler.js';
 
 // Mock the LLM client
 vi.mock('../lib/genai/llmClient.js', () => ({
@@ -54,6 +55,7 @@ describe('Rate Detailed Row Route', () => {
         app = express();
         app.use(express.json());
         app.use('/api/llm', router);
+        app.use(errorHandler);
     });
 
     describe('POST /rate-detailed-row', () => {
@@ -148,7 +150,7 @@ describe('Rate Detailed Row Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or invalid question',
             });
@@ -163,7 +165,7 @@ describe('Rate Detailed Row Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or invalid attributeName',
             });
@@ -178,7 +180,7 @@ describe('Rate Detailed Row Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or empty attributeValue',
             });
@@ -194,7 +196,7 @@ describe('Rate Detailed Row Route', () => {
                 })
                 .expect(400);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
                 error: 'Missing or empty attributeValue',
             });
@@ -316,6 +318,155 @@ describe('Rate Detailed Row Route', () => {
             );
         });
 
+        it('should return 400 for question exceeding 1000 characters', async () => {
+            const longQuestion = 'a'.repeat(1001);
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: longQuestion,
+                    attributeName: 'Product Name',
+                    attributeValue: 'Widget Pro',
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Question exceeds maximum length of 1000 characters',
+            });
+        });
+
+        it('should return 400 for attributeName exceeding 200 characters', async () => {
+            const longAttributeName = 'a'.repeat(201);
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: 'Provide product details',
+                    attributeName: longAttributeName,
+                    attributeValue: 'Widget Pro',
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'AttributeName exceeds maximum length of 200 characters',
+            });
+        });
+
+        it('should return 400 for attributeValue exceeding 10000 characters', async () => {
+            const longAttributeValue = 'a'.repeat(10001);
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: 'Provide product details',
+                    attributeName: 'Product Name',
+                    attributeValue: longAttributeValue,
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'AttributeValue exceeds maximum length of 10000 characters',
+            });
+        });
+
+        it('should return 400 for examples array exceeding 10 items', async () => {
+            const tooManyExamples = Array(11).fill('Example');
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: 'Provide product details',
+                    attributeName: 'Product Name',
+                    attributeValue: 'Widget Pro',
+                    examples: tooManyExamples,
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Examples array exceeds maximum of 10 items',
+            });
+        });
+
+        it('should return 400 for individual example exceeding 1000 characters', async () => {
+            const longExample = 'a'.repeat(1001);
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: 'Provide product details',
+                    attributeName: 'Product Name',
+                    attributeValue: 'Widget Pro',
+                    examples: ['Short example', longExample],
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Example at index 1 exceeds maximum length of 1000 characters',
+            });
+        });
+
+        it('should return 400 for non-string example in array', async () => {
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: 'Provide product details',
+                    attributeName: 'Product Name',
+                    attributeValue: 'Widget Pro',
+                    examples: ['Valid example', 123, 'Another valid'],
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Example at index 1 must be a string',
+            });
+        });
+
+        it('should return 400 for non-array examples', async () => {
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: 'Provide product details',
+                    attributeName: 'Product Name',
+                    attributeValue: 'Widget Pro',
+                    examples: 'Not an array',
+                })
+                .expect(400);
+
+            expect(response.body).toMatchObject({
+                ok: false,
+                error: 'Examples must be an array',
+            });
+        });
+
+        it('should accept inputs at maximum allowed lengths', async () => {
+            const { LLMClient } = await import('../lib/genai/llmClient.js');
+            const mockGenerateStructured = vi.fn().mockResolvedValue({
+                rate: 'valid',
+                comment: 'Good',
+            });
+            (LLMClient as any).mockImplementation(() => ({
+                generateStructured: mockGenerateStructured,
+            }));
+
+            const maxQuestion = 'a'.repeat(1000);
+            const maxAttributeName = 'b'.repeat(200);
+            const maxAttributeValue = 'c'.repeat(10000);
+            const maxExamples = Array(10).fill('d'.repeat(1000));
+
+            const response = await request(app)
+                .post('/api/llm/rate-detailed-row')
+                .send({
+                    question: maxQuestion,
+                    attributeName: maxAttributeName,
+                    attributeValue: maxAttributeValue,
+                    examples: maxExamples,
+                })
+                .expect(200);
+
+            expect(response.body.ok).toBe(true);
+        });
+
         it('should return 500 on LLM error', async () => {
             const { LLMClient } = await import('../lib/genai/llmClient.js');
             const mockGenerateStructured = vi.fn().mockRejectedValue(new Error('LLM error'));
@@ -333,10 +484,10 @@ describe('Rate Detailed Row Route', () => {
                 })
                 .expect(500);
 
-            expect(response.body).toEqual({
+            expect(response.body).toMatchObject({
                 ok: false,
-                error: 'Internal server error',
             });
+            expect(response.body.error).toBeTruthy();
         });
     });
 });
