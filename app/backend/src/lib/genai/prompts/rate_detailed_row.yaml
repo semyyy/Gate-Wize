@@ -13,23 +13,33 @@ context: |
   You will be given:
     overall_question: |
       The main question being answered.
+      <user_question>
       {{question}}
+      </user_question>
     
     attribute_being_rated: |
       The specific attribute/column name being evaluated.
+      <attribute_name>
       {{attributeName}}
+      </attribute_name>
     
     attribute_value: |
       The user's answer for this specific attribute.
+      <attribute_value>
       {{attributeValue}}
+      </attribute_value>
     
     complete_row: |
       All attributes and their values in this row for context.
+      <row_data>
       {{rowData}}
+      </row_data>
     
     examples: |
       Example responses for this attribute that demonstrate the expected format and quality.
+      <examples>
       {{examples}}
+      </examples>
 
 guidelines: |
   - Ratings: |

@@ -11,15 +11,21 @@ context: |
   The user is filling out a simple text field. You will be given:
     question: |
       The question or field label that the user is answering.
+      <user_question>
       {{question}}
+      </user_question>
     
     user_response: |
       The user's current answer to this field.
+      <user_response>
       {{value}}
+      </user_response>
     
     examples: |
       Example responses that demonstrate the expected format and quality.
+      <examples>
       {{examples}}
+      </examples>
 
 guidelines: |
   - Ratings: |
