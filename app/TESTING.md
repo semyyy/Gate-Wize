@@ -237,7 +237,7 @@ describe('myApiFunction', () => {
 
 ### Backend Tests
 
-#### ✅ Form CRUD Operations
+#### Form CRUD Operations
 - `formService.test.ts` - Tests for form storage service
   - Save form with valid/invalid data
   - Load existing/non-existing forms
@@ -252,7 +252,7 @@ describe('myApiFunction', () => {
   - GET `/list` - Listing with query parameters
   - DELETE `/delete/:id` - Form deletion
 
-#### ✅ LLM Rating Endpoints
+#### LLM Rating Endpoints
 - `rate-simple-field.test.ts` - Tests for simple field rating
   - Valid request handling
   - Input validation (question, value, examples)
@@ -265,7 +265,7 @@ describe('myApiFunction', () => {
   - Row data formatting
   - Error handling
 
-#### ✅ Input Validation
+#### Input Validation
 All route tests include comprehensive input validation:
 - Missing required fields
 - Invalid field types
@@ -274,7 +274,7 @@ All route tests include comprehensive input validation:
 
 ### Frontend Tests
 
-#### ✅ Form API Functions
+#### Form API Functions
 - `formApi.test.ts` - Tests for all API functions
   - `listForms` - With/without unpublished parameter
   - `loadForm` - Successful/failed loads

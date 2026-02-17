@@ -40,24 +40,27 @@ router.post('/rate-detailed-row', async (req, res, next) => {
             throw new ValidationError('Missing or invalid question');
         }
 
-        if (question.length > 1000) {
-            throw new ValidationError('Question exceeds maximum length of 1000 characters');
+        const maxQuestionLength = Number(process.env.INPUT_MAX_LENGTH_QUESTION) || 1000;
+        if (question.length > maxQuestionLength) {
+            throw new ValidationError(`Question exceeds maximum length of ${maxQuestionLength} characters`);
         }
 
         if (!attributeName || typeof attributeName !== 'string') {
             throw new ValidationError('Missing or invalid attributeName');
         }
 
-        if (attributeName.length > 200) {
-            throw new ValidationError('AttributeName exceeds maximum length of 200 characters');
+        const maxAttributeNameLength = Number(process.env.INPUT_MAX_LENGTH_ATTRIBUTE_NAME) || 200;
+        if (attributeName.length > maxAttributeNameLength) {
+            throw new ValidationError(`AttributeName exceeds maximum length of ${maxAttributeNameLength} characters`);
         }
 
         if (!attributeValue || typeof attributeValue !== 'string' || attributeValue.trim().length === 0) {
             throw new ValidationError('Missing or empty attributeValue');
         }
 
-        if (attributeValue.length > 10000) {
-            throw new ValidationError('AttributeValue exceeds maximum length of 10000 characters');
+        const maxAttributeValueLength = Number(process.env.INPUT_MAX_LENGTH_ATTRIBUTE_VALUE) || 10000;
+        if (attributeValue.length > maxAttributeValueLength) {
+            throw new ValidationError(`AttributeValue exceeds maximum length of ${maxAttributeValueLength} characters`);
         }
 
         // Validate examples array
@@ -66,16 +69,18 @@ router.post('/rate-detailed-row', async (req, res, next) => {
                 throw new ValidationError('Examples must be an array');
             }
 
-            if (examples.length > 10) {
-                throw new ValidationError('Examples array exceeds maximum of 10 items');
+            const maxExamplesCount = Number(process.env.INPUT_MAX_EXAMPLES_COUNT) || 10;
+            if (examples.length > maxExamplesCount) {
+                throw new ValidationError(`Examples array exceeds maximum of ${maxExamplesCount} items`);
             }
 
             for (let i = 0; i < examples.length; i++) {
                 if (typeof examples[i] !== 'string') {
                     throw new ValidationError(`Example at index ${i} must be a string`);
                 }
-                if (examples[i].length > 1000) {
-                    throw new ValidationError(`Example at index ${i} exceeds maximum length of 1000 characters`);
+                const maxExampleLength = Number(process.env.INPUT_MAX_LENGTH_EXAMPLE) || 1000;
+                if (examples[i].length > maxExampleLength) {
+                    throw new ValidationError(`Example at index ${i} exceeds maximum length of ${maxExampleLength} characters`);
                 }
             }
         }

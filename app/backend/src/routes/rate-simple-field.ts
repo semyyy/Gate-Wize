@@ -40,16 +40,18 @@ router.post('/rate-simple-field', async (req, res, next) => {
             throw new ValidationError('Missing or invalid question');
         }
 
-        if (question.length > 1000) {
-            throw new ValidationError('Question exceeds maximum length of 1000 characters');
+        const maxQuestionLength = Number(process.env.INPUT_MAX_LENGTH_QUESTION) || 1000;
+        if (question.length > maxQuestionLength) {
+            throw new ValidationError(`Question exceeds maximum length of ${maxQuestionLength} characters`);
         }
 
         if (!value || typeof value !== 'string' || value.trim().length === 0) {
             throw new ValidationError('Missing or empty value');
         }
 
-        if (value.length > 10000) {
-            throw new ValidationError('Value exceeds maximum length of 10000 characters');
+        const maxValueLength = Number(process.env.INPUT_MAX_LENGTH_VALUE) || 10000;
+        if (value.length > maxValueLength) {
+            throw new ValidationError(`Value exceeds maximum length of ${maxValueLength} characters`);
         }
 
         // Validate examples array
@@ -58,16 +60,18 @@ router.post('/rate-simple-field', async (req, res, next) => {
                 throw new ValidationError('Examples must be an array');
             }
 
-            if (examples.length > 10) {
-                throw new ValidationError('Examples array exceeds maximum of 10 items');
+            const maxExamplesCount = Number(process.env.INPUT_MAX_EXAMPLES_COUNT) || 10;
+            if (examples.length > maxExamplesCount) {
+                throw new ValidationError(`Examples array exceeds maximum of ${maxExamplesCount} items`);
             }
 
             for (let i = 0; i < examples.length; i++) {
                 if (typeof examples[i] !== 'string') {
                     throw new ValidationError(`Example at index ${i} must be a string`);
                 }
-                if (examples[i].length > 1000) {
-                    throw new ValidationError(`Example at index ${i} exceeds maximum length of 1000 characters`);
+                const maxExampleLength = Number(process.env.INPUT_MAX_LENGTH_EXAMPLE) || 1000;
+                if (examples[i].length > maxExampleLength) {
+                    throw new ValidationError(`Example at index ${i} exceeds maximum length of ${maxExampleLength} characters`);
                 }
             }
         }

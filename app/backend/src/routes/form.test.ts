@@ -27,6 +27,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import router from './form.js';
+import { errorHandler } from '../middleware/errorHandler.js';
 
 // Mock the formService module
 vi.mock('../lib/data/services/formService.js', () => ({
@@ -45,6 +46,8 @@ describe('Form Routes', () => {
         app = express();
         app.use(express.json());
         app.use('/api/form', router);
+        // Add error handler middleware to catch and format errors
+        app.use(errorHandler);
     });
 
     describe('POST /save/', () => {
@@ -106,7 +109,8 @@ describe('Form Routes', () => {
                 .send(spec)
                 .expect(500);
 
-            expect(response.body).toEqual({ ok: false, error: 'Error: Save failed' });
+            expect(response.body.ok).toBe(false);
+            expect(response.body.error).toBe('Save failed');
         });
     });
 
@@ -134,7 +138,8 @@ describe('Form Routes', () => {
                 .get('/api/form/load/non-existing')
                 .expect(500);
 
-            expect(response.body).toEqual({ ok: false, error: 'Error: Not found' });
+            expect(response.body.ok).toBe(false);
+            expect(response.body.error).toBe('Not found');
         });
     });
 
@@ -223,7 +228,8 @@ describe('Form Routes', () => {
                 .delete('/api/form/delete/test-form')
                 .expect(500);
 
-            expect(response.body).toEqual({ ok: false, error: 'Error: Delete failed' });
+            expect(response.body.ok).toBe(false);
+            expect(response.body.error).toBe('Delete failed');
         });
     });
 });
