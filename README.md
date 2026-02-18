@@ -1,6 +1,6 @@
 Context and Challenges
 
-As part of the project validation process (PGC), project managers must complete a form describing their initiative (objectives, motivations, functional and non-functional requirements, users, etc.).
+As part of the project validation process, project managers must complete a form describing their initiative (objectives, motivations, functional and non-functional requirements, users, etc.).
 
 However, the quality of the submitted answers is often insufficient, leading to:
 	•	Numerous back-and-forths between project managers and the architecture team
